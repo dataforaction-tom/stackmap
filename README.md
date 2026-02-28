@@ -64,7 +64,9 @@ project/
     │   ├── plan-reviewer.md    ← Catch gaps before building
     │   └── verify-app.md       ← End-to-end verification
     └── skills/
-        └── README.md       ← How to create project-specific skills
+        ├── README.md       ← How to create project-specific skills
+        └── docs-updater/
+            └── SKILL.md    ← Maintains user guide + changelog from git changes
 ```
 
 ### Tracking Files
@@ -100,6 +102,14 @@ Subagents run in their own context window, keeping your main session clean.
 | `code-simplifier` | Simplifies code after a feature is complete without changing behaviour |
 | `plan-reviewer` | Reviews a plan before implementation — catches gaps, risks, over-engineering |
 | `verify-app` | Runs build, lint, tests, and checks features work end-to-end |
+
+### Skills
+
+Skills are invoked via natural language — Claude decides when to use them based on what you ask. See `.claude/skills/README.md` for how to create your own.
+
+| Skill | What it does |
+|-------|--------------|
+| `docs-updater` | Reviews git changes and updates end-user documentation — a user guide and structured changelog in markdown, ready for mkdocs hosting |
 
 ## The Core Workflow
 
