@@ -204,8 +204,8 @@ export function FunctionSystems() {
       }
 
       const staffCount = architecture?.organisation.staffCount ?? DEFAULT_STAFF[orgSize];
-      const estimate = estimateToolCost(match?.pricing, match?.estimatedAnnualCost, staffCount);
-      if (estimate.annualTotal > 0 || match?.pricing?.model === 'free' || match?.estimatedAnnualCost === 0) {
+      if (match) {
+        const estimate = estimateToolCost(match.pricing, match.estimatedAnnualCost, staffCount);
         system.cost = {
           amount: estimate.annualTotal,
           period: 'annual',
@@ -283,12 +283,40 @@ export function FunctionSystems() {
     setCostBreakdown(null);
   }, [formData, activeFunction, techFreedomEnabled, currentMatch]);
 
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
   const handleRemoveSystem = useCallback(
     (functionId: string, index: number) => {
       setSystemsByFunction((prev) => ({
         ...prev,
         [functionId]: (prev[functionId] ?? []).filter((_, i) => i !== index),
       }));
+      if (editingIndex === index) setEditingIndex(null);
+    },
+    [editingIndex],
+  );
+
+  const handleUpdateSystemCost = useCallback(
+    (functionId: string, index: number, amount: string, period: string, model: string) => {
+      setSystemsByFunction((prev) => {
+        const systems = [...(prev[functionId] ?? [])];
+        const parsed = parseFloat(amount);
+        if (!isNaN(parsed) && parsed >= 0) {
+          systems[index] = {
+            ...systems[index],
+            cost: {
+              amount: parsed,
+              period: period as 'monthly' | 'annual',
+              model: parsed === 0 ? 'free' as const : model as 'subscription' | 'perpetual' | 'free' | 'unknown',
+            },
+          };
+        } else {
+          // Clear cost if amount is empty/invalid
+          const { cost: _, ...rest } = systems[index];
+          systems[index] = rest;
+        }
+        return { ...prev, [functionId]: systems };
+      });
     },
     [],
   );
@@ -445,43 +473,144 @@ export function FunctionSystems() {
                   const score = sys.techFreedomScore;
                   const total = score ? totalScore(score) : null;
                   const level = total !== null ? riskLevel(total) : null;
+                  const isEditing = editingIndex === idx;
                   return (
                   <li
                     key={idx}
-                    className="flex items-center justify-between bg-white border border-surface-200 rounded-lg p-3"
+                    className="bg-white border border-surface-200 rounded-lg p-3"
                   >
-                    <div className="break-words min-w-0 flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-primary-900 break-words">{sys.name}</span>
-                      <span className="text-sm text-primary-500" aria-label="system type">
-                        {'\u00B7'} {SYSTEM_TYPES.find((t) => t.value === sys.type)?.label}
-                      </span>
-                      {sys.cost && sys.cost.amount > 0 && (
-                        <span className="text-sm text-primary-500">
-                          {'\u00B7'} {'\u00A3'}{sys.cost.amount}/{sys.cost.period === 'annual' ? 'year' : 'month'}
+                    <div className="flex items-center justify-between">
+                      <div className="break-words min-w-0 flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-primary-900 break-words">{sys.name}</span>
+                        <span className="text-sm text-primary-500" aria-label="system type">
+                          {'\u00B7'} {SYSTEM_TYPES.find((t) => t.value === sys.type)?.label}
                         </span>
-                      )}
-                      {sys.vendor && (
-                        <span className="text-sm text-primary-500">({sys.vendor})</span>
-                      )}
-                      {level !== null && total !== null && (
-                        <span
-                          className={`text-xs font-medium px-1.5 py-0.5 rounded ${RISK_COLORS[level]}`}
-                          data-testid="risk-indicator"
+                        {sys.cost && sys.cost.amount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingIndex(isEditing ? null : idx)}
+                            className="text-sm text-primary-600 hover:text-primary-800 underline underline-offset-2 transition-colors"
+                            aria-label={`Edit cost for ${sys.name}`}
+                          >
+                            {'\u00A3'}{sys.cost.amount.toLocaleString('en-GB')}/{sys.cost.period === 'annual' ? 'yr' : 'mo'}
+                          </button>
+                        )}
+                        {sys.cost && sys.cost.model === 'free' && (
+                          <span className="text-sm text-green-600">Free</span>
+                        )}
+                        {!sys.cost && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingIndex(isEditing ? null : idx)}
+                            className="text-xs text-accent-600 hover:text-accent-700 underline underline-offset-2 transition-colors"
+                            aria-label={`Add cost for ${sys.name}`}
+                          >
+                            Add cost
+                          </button>
+                        )}
+                        {sys.vendor && (
+                          <span className="text-sm text-primary-500">({sys.vendor})</span>
+                        )}
+                        {level !== null && total !== null && (
+                          <span
+                            className={`text-xs font-medium px-1.5 py-0.5 rounded ${RISK_COLORS[level]}`}
+                            data-testid="risk-indicator"
+                          >
+                            Risk: {total}/25 {level.charAt(0).toUpperCase() + level.slice(1)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setEditingIndex(isEditing ? null : idx)}
+                          aria-label={`Edit ${sys.name}`}
+                          className="text-primary-400 hover:text-primary-600 transition-colors p-1"
                         >
-                          Risk: {total}/25 {level.charAt(0).toUpperCase() + level.slice(1)}
-                        </span>
-                      )}
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSystem(activeFunction.id, idx)}
+                          aria-label={`Remove ${sys.name}`}
+                          className="text-primary-400 hover:text-red-600 transition-colors p-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSystem(activeFunction.id, idx)}
-                      aria-label={`Remove ${sys.name}`}
-                      className="text-primary-400 hover:text-red-600 transition-colors p-1"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                    {/* Inline cost editor */}
+                    {isEditing && (
+                      <div className="mt-3 pt-3 border-t border-surface-200">
+                        <p className="text-xs font-medium text-primary-700 mb-2">Edit cost for {sys.name}</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <label htmlFor={`cost-amount-${idx}`} className="text-xs text-primary-500 block mb-1">Amount (£)</label>
+                            <input
+                              id={`cost-amount-${idx}`}
+                              type="number"
+                              min="0"
+                              step="1"
+                              defaultValue={sys.cost?.amount ?? ''}
+                              onBlur={(e) => handleUpdateSystemCost(
+                                activeFunction.id, idx, e.target.value,
+                                sys.cost?.period ?? 'annual',
+                                sys.cost?.model ?? 'subscription',
+                              )}
+                              className="w-full rounded border border-surface-300 px-2 py-1.5 text-sm text-primary-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor={`cost-period-${idx}`} className="text-xs text-primary-500 block mb-1">Period</label>
+                            <select
+                              id={`cost-period-${idx}`}
+                              defaultValue={sys.cost?.period ?? 'annual'}
+                              onChange={(e) => handleUpdateSystemCost(
+                                activeFunction.id, idx,
+                                String(sys.cost?.amount ?? 0),
+                                e.target.value,
+                                sys.cost?.model ?? 'subscription',
+                              )}
+                              className="w-full rounded border border-surface-300 px-2 py-1.5 text-sm text-primary-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                            >
+                              <option value="annual">Per year</option>
+                              <option value="monthly">Per month</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label htmlFor={`cost-model-${idx}`} className="text-xs text-primary-500 block mb-1">Model</label>
+                            <select
+                              id={`cost-model-${idx}`}
+                              defaultValue={sys.cost?.model ?? 'subscription'}
+                              onChange={(e) => handleUpdateSystemCost(
+                                activeFunction.id, idx,
+                                String(sys.cost?.amount ?? 0),
+                                sys.cost?.period ?? 'annual',
+                                e.target.value,
+                              )}
+                              className="w-full rounded border border-surface-300 px-2 py-1.5 text-sm text-primary-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                            >
+                              <option value="subscription">Subscription</option>
+                              <option value="perpetual">One-off</option>
+                              <option value="free">Free</option>
+                              <option value="unknown">Don't know</option>
+                            </select>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditingIndex(null)}
+                          className="text-xs text-primary-600 hover:text-primary-800 mt-2 underline underline-offset-2"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    )}
                   </li>
                   );
                 })}

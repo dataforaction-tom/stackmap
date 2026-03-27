@@ -76,8 +76,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.8,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 63 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 10 },
+        { name: 'Pro', annualPerSeat: 63, recommended: true },
         { name: 'Business+', annualPerSeat: 105, minUsers: 25 },
       ],
     },
@@ -102,8 +102,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.5,
       tiers: [
-        { name: 'Basic', annualPerSeat: 0, maxUsers: 100, recommended: true },
-        { name: 'Pro', annualPerSeat: 120 },
+        { name: 'Basic', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Pro', annualPerSeat: 120, recommended: true },
         { name: 'Business', annualPerSeat: 180, minUsers: 10 },
       ],
     },
@@ -124,6 +124,15 @@ export const KNOWN_TOOLS: KnownTool[] = [
     keyRisks:
       'US jurisdiction; bundled with M365 creating lock-in; extensive telemetry; tightly coupled to Microsoft ecosystem',
     estimatedAnnualCost: 0,
+    pricing: {
+      model: 'tiered',
+      penetrationRate: 0.8,
+      tiers: [
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Part of M365', annualPerSeat: 54, recommended: true },
+      ],
+      notes: 'Free version available. Full version included with M365 Business Basic (£4.50/user/month).',
+    },
   },
 
   // --- CRM & Sales ---
@@ -174,8 +183,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.3,
       tiers: [
-        { name: 'Free CRM', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Starter', annualPerSeat: 216 },
+        { name: 'Free CRM', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Starter', annualPerSeat: 216, recommended: true },
         { name: 'Professional', annualPerSeat: 4800, minUsers: 5 },
       ],
     },
@@ -361,6 +370,15 @@ export const KNOWN_TOOLS: KnownTool[] = [
     keyRisks:
       'US jurisdiction; bundled with M365; files downloadable but deeply integrated with Office apps; included in M365 licence',
     estimatedAnnualCost: 0,
+    pricing: {
+      model: 'tiered',
+      penetrationRate: 0.8,
+      tiers: [
+        { name: 'Free (5GB)', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Part of M365', annualPerSeat: 54, recommended: true },
+      ],
+      notes: 'Free tier has 5GB limit. Full 1TB storage included with M365.',
+    },
   },
 
   // --- Project Management ---
@@ -418,8 +436,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.5,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 5, recommended: true },
-        { name: 'Team', annualPerSeat: 200 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Team', annualPerSeat: 200, recommended: true },
         { name: 'Business', annualPerSeat: 288, minUsers: 20 },
       ],
     },
@@ -591,8 +609,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.3,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Plus', annualPerSeat: 240 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Plus', annualPerSeat: 240, recommended: true },
         { name: 'Team', annualPerSeat: 300, minUsers: 2 },
         { name: 'Enterprise', annualPerSeat: 720, minUsers: 50 },
       ],
@@ -618,8 +636,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.2,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 240 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 240, recommended: true },
         { name: 'Team', annualPerSeat: 360, minUsers: 5 },
         { name: 'Enterprise', annualPerSeat: 720, minUsers: 50 },
       ],
@@ -671,8 +689,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.3,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Advanced', annualPerSeat: 240 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Advanced', annualPerSeat: 240, recommended: true },
         { name: 'Workspace add-on', annualPerSeat: 360, minUsers: 1 },
       ],
     },
@@ -724,8 +742,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.3,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Premium', annualPerSeat: 144 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Premium', annualPerSeat: 144, recommended: true },
         { name: 'Business', annualPerSeat: 180, minUsers: 3 },
       ],
     },
@@ -794,8 +812,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.1,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Starter', annualPerSeat: 240 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Starter', annualPerSeat: 240, recommended: true },
         { name: 'Professional', annualPerSeat: 600 },
         { name: 'Team', annualPerSeat: 840, minUsers: 3 },
       ],
@@ -822,8 +840,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.1,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Core', annualPerSeat: 120 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Core', annualPerSeat: 120, recommended: true },
         { name: 'Pro', annualPerSeat: 240 },
       ],
     },
@@ -848,8 +866,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.2,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 120 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 120, recommended: true },
         { name: 'Business', annualPerSeat: 240, minUsers: 3 },
       ],
     },
@@ -874,8 +892,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.15,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 120 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 120, recommended: true },
         { name: 'Business', annualPerSeat: 228, minUsers: 3 },
       ],
     },
@@ -900,8 +918,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.15,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 240 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 240, recommended: true },
       ],
     },
   },
@@ -975,8 +993,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.2,
       tiers: [
-        { name: 'Le Chat Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Le Chat Pro', annualPerSeat: 240 },
+        { name: 'Le Chat Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Le Chat Pro', annualPerSeat: 240, recommended: true },
         { name: 'API (pay-as-you-go)', annualPerSeat: 120 },
       ],
       notes: 'EU-headquartered. Models also available for self-hosting via open weights',
@@ -1065,8 +1083,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.1,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 120 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 120, recommended: true },
       ],
       notes: 'EU-hosted, sustainability-focused AI assistant',
     },
@@ -1091,8 +1109,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 108 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 108, recommended: true },
         { name: 'Enterprise', annualPerSeat: 240, minUsers: 5 },
       ],
       notes: 'Hub is free. Pro for faster inference. Models downloadable for self-hosting',
@@ -1259,8 +1277,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 228 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 228, recommended: true },
       ],
     },
   },
@@ -1284,8 +1302,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Hobby', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 240 },
+        { name: 'Hobby', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 240, recommended: true },
       ],
     },
   },
@@ -1309,8 +1327,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 240 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 240, recommended: true },
       ],
     },
   },
@@ -1533,7 +1551,15 @@ export const KNOWN_TOOLS: KnownTool[] = [
     keyRisks:
       'US jurisdiction; Google data practices apply; widely used as de-facto database in small orgs; data exportable as CSV/Excel; part of Google Workspace pricing; formulas and scripts not portable',
     estimatedAnnualCost: 0,
-    pricing: { model: 'free', notes: 'Free with Google account. Part of Google Workspace for orgs.' },
+    pricing: {
+      model: 'tiered',
+      penetrationRate: 0.3,
+      tiers: [
+        { name: 'Free (personal)', annualPerSeat: 0, maxUsers: 3, recommended: true },
+        { name: 'Part of Google Workspace', annualPerSeat: 50, minUsers: 1 },
+      ],
+      notes: 'Free with personal Google account. For orgs, cost is via Google Workspace subscription.',
+    },
   },
   {
     slug: 'excel',
@@ -1551,7 +1577,14 @@ export const KNOWN_TOOLS: KnownTool[] = [
     keyRisks:
       'US jurisdiction; ubiquitous in sector; files portable but macros/VBA not; often used as critical database without backup; included in M365; desktop version still works offline',
     estimatedAnnualCost: 0,
-    pricing: { model: 'free', notes: 'Included with Microsoft 365 subscription' },
+    pricing: {
+      model: 'tiered',
+      penetrationRate: 0.5,
+      tiers: [
+        { name: 'Part of M365', annualPerSeat: 54, recommended: true },
+      ],
+      notes: 'Included with Microsoft 365 subscription. Cost shown is the M365 base licence.',
+    },
   },
   {
     slug: 'access',
@@ -1591,8 +1624,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.5,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Plus', annualPerSeat: 96 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Plus', annualPerSeat: 96, recommended: true },
         { name: 'Business', annualPerSeat: 216, minUsers: 10 },
       ],
     },
@@ -1662,8 +1695,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 300 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Pro', annualPerSeat: 300, recommended: true },
       ],
       notes: 'Open-source Firebase alternative built on PostgreSQL',
     },
@@ -1690,8 +1723,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.15,
       tiers: [
-        { name: 'Desktop (free)', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 120 },
+        { name: 'Desktop (free)', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Pro', annualPerSeat: 120, recommended: true },
         { name: 'Premium per user', annualPerSeat: 240, minUsers: 1 },
       ],
       notes: 'Desktop is free. Pro (£10/month) needed to share reports. Often bundled with M365 E5.',
@@ -1923,8 +1956,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.1,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Team', annualPerSeat: 240, minUsers: 2 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Team', annualPerSeat: 240, minUsers: 2, recommended: true },
       ],
       notes: 'Collaborative mapping. Think "Google Docs for maps". Good for service area mapping.',
     },
@@ -2046,8 +2079,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.1,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Essentials', annualPerSeat: 72 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Essentials', annualPerSeat: 72, recommended: true },
         { name: 'Team', annualPerSeat: 120, minUsers: 2 },
       ],
       notes: 'Per social channel pricing. Essentials: £6/mo per channel',
@@ -2164,8 +2197,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.1,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 96 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Pro', annualPerSeat: 96, recommended: true },
         { name: 'Business', annualPerSeat: 120, minUsers: 5 },
       ],
       notes: 'Free: 1 meeting room, 100 participants. Pro: £8/mo per room',
@@ -2435,8 +2468,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.3,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 2, recommended: true },
-        { name: 'Basic', annualPerSeat: 108, minUsers: 3 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 2 },
+        { name: 'Basic', annualPerSeat: 108, minUsers: 3, recommended: true },
         { name: 'Standard', annualPerSeat: 144, minUsers: 3 },
         { name: 'Pro', annualPerSeat: 228, minUsers: 3 },
       ],
@@ -2486,8 +2519,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.3,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Unlimited', annualPerSeat: 84 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Unlimited', annualPerSeat: 84, recommended: true },
         { name: 'Business', annualPerSeat: 144 },
       ],
       notes: 'Free tier is generous. Unlimited: £7/member/month. Business: £12/member/month',
@@ -2567,8 +2600,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.1,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Pro', annualPerSeat: 48 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 5 },
+        { name: 'Pro', annualPerSeat: 48, recommended: true },
         { name: 'Business', annualPerSeat: 72, minUsers: 2 },
       ],
       notes: 'Free: 5 projects. Pro: £4/month. Business: £6/user/month',
@@ -2714,8 +2747,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Starter', annualPerSeat: 108 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Starter', annualPerSeat: 108, recommended: true },
         { name: 'Business', annualPerSeat: 540 },
       ],
       notes: 'Free: 300 emails/day. Starter: £9/month (20k emails). Priced by volume not contacts',
@@ -2741,8 +2774,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Newsletter (free)', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Creator', annualPerSeat: 348 },
+        { name: 'Newsletter (free)', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Creator', annualPerSeat: 348, recommended: true },
         { name: 'Creator Pro', annualPerSeat: 588 },
       ],
       notes: 'Free up to 10k subscribers (limited). Creator: £29/month. Pricing increases with subscriber count',
@@ -2768,8 +2801,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.05,
       tiers: [
-        { name: 'Lite', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Essentials', annualPerSeat: 348 },
+        { name: 'Lite', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Essentials', annualPerSeat: 348, recommended: true },
         { name: 'Premier', annualPerSeat: 1500 },
       ],
       notes: 'Lite: £9/month (500 contacts). Pricing increases with contact count',
@@ -2888,8 +2921,8 @@ export const KNOWN_TOOLS: KnownTool[] = [
       model: 'tiered',
       penetrationRate: 0.2,
       tiers: [
-        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
-        { name: 'Professional', annualPerSeat: 144 },
+        { name: 'Free', annualPerSeat: 0, maxUsers: 3 },
+        { name: 'Professional', annualPerSeat: 144, recommended: true },
         { name: 'Organisation', annualPerSeat: 540, minUsers: 5 },
       ],
       notes: 'Free: 3 Figma files, unlimited viewers. Professional: £12/editor/month',

@@ -85,7 +85,7 @@ export function selectTier(
 ): PricingTier | undefined {
   if (!tiers || tiers.length === 0) return undefined;
 
-  // Find the best tier: must fit the user count, prefer recommended, then cheapest
+  // Find tiers that fit the user count
   const eligible = tiers.filter(
     (t) =>
       (!t.minUsers || userCount >= t.minUsers) &&
@@ -97,10 +97,22 @@ export function selectTier(
     return tiers[tiers.length - 1];
   }
 
+  // For orgs with real staff (>3), prefer the cheapest PAID tier over free tiers.
+  // Rationale: a 15-person org using ChatGPT will have paid licences, not 15 free accounts.
+  // Free tiers are realistic only for very small teams or genuinely free tools.
+  if (userCount > 3) {
+    const paidEligible = eligible.filter((t) => t.annualPerSeat > 0);
+    if (paidEligible.length > 0) {
+      const recommended = paidEligible.find((t) => t.recommended);
+      if (recommended) return recommended;
+      return paidEligible.sort((a, b) => a.annualPerSeat - b.annualPerSeat)[0];
+    }
+  }
+
+  // For very small orgs or when only free tiers exist
   const recommended = eligible.find((t) => t.recommended);
   if (recommended) return recommended;
 
-  // Return cheapest eligible
   return eligible.sort((a, b) => a.annualPerSeat - b.annualPerSeat)[0];
 }
 

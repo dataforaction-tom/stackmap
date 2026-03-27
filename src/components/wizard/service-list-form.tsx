@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/select';
 import { SERVICE_TEMPLATES } from '@/lib/service-templates';
 import { findMatchingTool } from '@/lib/techfreedom/match';
 import { KNOWN_TOOLS } from '@/lib/techfreedom/tools';
+import { estimateToolCost, DEFAULT_STAFF } from '@/lib/cost-estimates';
 import type { SystemType } from '@/lib/types';
 
 const STATUS_OPTIONS = [
@@ -143,6 +144,12 @@ export function ServiceListForm() {
           existingSystemNames.add(toolName.toLowerCase());
 
           const match = findMatchingTool(toolName, KNOWN_TOOLS);
+          const orgSize = architecture?.organisation.size ?? 'small';
+          const staffCount = architecture?.organisation.staffCount ?? DEFAULT_STAFF[orgSize];
+          const estimate = match
+            ? estimateToolCost(match.pricing, match.estimatedAnnualCost, staffCount)
+            : null;
+
           addSystem({
             name: match?.name ?? toolName,
             type: match ? guessSystemType(match.category) : 'other',
@@ -152,11 +159,11 @@ export function ServiceListForm() {
             functionIds: [],
             serviceIds: [serviceId],
             techFreedomScore: match?.score,
-            cost: match?.estimatedAnnualCost !== undefined
+            cost: estimate
               ? {
-                  amount: match.estimatedAnnualCost,
-                  period: 'annual',
-                  model: match.estimatedAnnualCost === 0 ? 'free' : 'subscription',
+                  amount: estimate.annualTotal,
+                  period: 'annual' as const,
+                  model: estimate.annualTotal === 0 ? 'free' as const : 'subscription' as const,
                 }
               : undefined,
           });
