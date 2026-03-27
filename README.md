@@ -314,4 +314,4 @@ Typography uses **Source Serif 4** for display headings and **Figtree** for body
 
 Built by [The Good Ship](https://thegoodship.org) and [tomcw.xyz](https://tomcw.xyz).
 
-Inspired by GDS Local's [Sourcing the Stack](https://www.local.gov.uk) initiative and the need for radically simpler architecture tooling in the VCSE sector.
+
