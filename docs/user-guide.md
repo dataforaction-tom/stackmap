@@ -328,7 +328,24 @@ The radar chart shows the aggregate risk profile of your entire stack across all
 
 ### Pre-scored tools
 
-Stackmap includes a database of approximately 27 commonly used tools with pre-scored risk assessments. When you add a system that matches a known tool, the risk scores are populated automatically. You can override any score if you disagree with the assessment.
+Stackmap includes a database of over 130 commonly used tools with pre-scored risk assessments, covering:
+
+- **AI tools** — ChatGPT, Claude, Microsoft Copilot, Gemini, plus privacy-focused alternatives like Ollama, LM Studio, Mistral, and other local models
+- **Productivity** — Microsoft 365, Google Workspace, LibreOffice, OnlyOffice
+- **CRM** — Salesforce, HubSpot, CiviCRM, Lamplight, Dynamics 365, Donorfy, Beacon
+- **Finance** — Xero, QuickBooks, Sage, FreeAgent, Wave
+- **Communication** — Slack, Zoom, Teams, Element/Matrix, Whereby, BigBlueButton
+- **Social media** — LinkedIn, Meta, Instagram, YouTube, TikTok, Mastodon, Bluesky
+- **Databases** — Google Sheets, Excel, Access, Notion, Airtable, Baserow, NocoDB
+- **Data visualisation** — Power BI, Tableau, Looker Studio, Metabase
+- **Geospatial** — QGIS, ArcGIS, Google Maps, Mapbox, Felt
+- **Hosting** — AWS, Azure, Cloudflare, Netlify, Vercel
+- **Payment** — Stripe, GoCardless, PayPal, JustGiving
+- **And more** — project management, marketing, events, design, storage, messaging
+
+When you add a system that matches a known tool, risk scores are populated automatically. You can override any score if you disagree with the assessment.
+
+Each tool in the database includes risk assessments, pricing data (where available), and a description of key risks relevant to social purpose organisations.
 
 ---
 
@@ -386,13 +403,26 @@ The sidebar displays a simplified Mermaid diagram that updates automatically as 
 
 ## 13. Starting Over
 
-### Editing previous steps
+### Navigating between steps
 
-You can navigate back to any previous step in the wizard using the stepper at the top. Your data is preserved — going back does not delete what you have entered in later steps.
+The stepper at the top of the wizard is fully interactive. You can click any completed step to jump back and edit your data. Your entries are preserved — going back shows what you previously entered, and you can make changes without losing work in later steps.
+
+On mobile, use the left and right arrows to navigate between steps.
 
 ### Clearing data
 
-To start fresh, you can clear your architecture data from the settings. This removes all data from your browser's local storage. This action cannot be undone.
+To start completely fresh, go to the path selection page (the first step). If you have existing data, you will see a banner offering to "Start fresh." Click it, then confirm. This removes all data from your browser's local storage and cannot be undone.
+
+### Cost overview and overlap detection
+
+The review step includes a cost overview showing:
+
+- **Total annual cost** of your technology stack
+- **Breakdown by function** — which areas cost the most
+- **Most expensive systems** — your top 3 by annual cost
+- **Potential overlaps** — where you have multiple systems of the same type under one function (e.g. two CRM systems in Fundraising), suggesting consolidation opportunities
+
+Cost data is included in the JSON export.
 
 !!! warning
     Clearing data is permanent. If you want to keep a copy, export your architecture as JSON before clearing.
