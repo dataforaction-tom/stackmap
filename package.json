@@ -5,7 +5,9 @@
   "description": "Lightweight architecture mapping for social purpose organisations",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && python -m mkdocs build -d out/docs",
+    "build:app": "next build",
+    "build:docs": "python -m mkdocs build -d out/docs",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
