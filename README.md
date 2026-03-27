@@ -14,7 +14,7 @@ Most charities, social enterprises, and local councils have no common model for 
 
 Stackmap is an open source tool that solves this problem. It provides a guided wizard that walks anyone with operational knowledge through mapping their organisation's technology — systems, integrations, data, and ownership — in an afternoon, with no enterprise architecture training required. The result is an immediately useful architecture map with Mermaid diagrams, cost analysis, and optional risk assessment.
 
-Stackmap was built in response to findings from GDS Local's "Sourcing the Stack" initiative, which found that 54% of councils already document architecture but use spreadsheets that are hard to aggregate and limited in usefulness. The same is true — often worse — across the VCSE sector.
+
 
 ## Features
 
