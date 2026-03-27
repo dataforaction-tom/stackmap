@@ -1,215 +1,317 @@
-# Claude Code Project Template
+# Stackmap
 
-A ready-to-use project structure for working effectively with [Claude Code](https://code.claude.com). Gives you state tracking, session handoffs, a self-improving mistakes log, slash commands, and subagents — so Claude stays on track across sessions and gets better over time.
+**Lightweight architecture mapping for social purpose organisations.**
 
-Based on best practices from [Boris Cherny](https://www.threads.com/@boris_cherny/post/DTBVlMIkpcm) (creator of Claude Code), [Anthropic's internal teams](https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf), and the wider community.
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-335%20passing-brightgreen.svg)]()
+[![WCAG 2.1 AA](https://img.shields.io/badge/accessibility-WCAG%202.1%20AA-blue.svg)]()
 
-## The Problem This Solves
+---
 
-Claude Code starts every session with no memory. Without structure, you end up repeating context, re-explaining decisions, and watching Claude make the same mistakes across sessions. This template gives you a lightweight system for:
+## What is Stackmap?
 
-- **Persistent context** — CLAUDE.md files that tell Claude how your project works
-- **State tracking** — plans, state diagrams, and component status that survive between sessions
-- **Session continuity** — handoff documents so you can `/clear` or close a session and pick up cleanly
-- **Continuous improvement** — a mistakes log that feeds back into Claude's instructions, so errors don't recur
-- **Verification** — slash commands and subagents that help Claude check its own work
+Most charities, social enterprises, and local councils have no common model for describing their technology. Architecture knowledge lives in people's heads or in scattered spreadsheets. Commercial enterprise architecture tools exist, but they are expensive, complex, and designed for specialists — not for the operations manager at a 12-person charity who just needs to understand what software the organisation uses and how it all connects.
+
+Stackmap is an open source tool that solves this problem. It provides a guided wizard that walks anyone with operational knowledge through mapping their organisation's technology — systems, integrations, data, and ownership — in an afternoon, with no enterprise architecture training required. The result is an immediately useful architecture map with Mermaid diagrams, cost analysis, and optional risk assessment.
+
+Stackmap was built in response to findings from GDS Local's "Sourcing the Stack" initiative, which found that 54% of councils already document architecture but use spreadsheets that are hard to aggregate and limited in usefulness. The same is true — often worse — across the VCSE sector.
+
+## Features
+
+- **Two wizard paths** — function-first ("what does your org do?") or service-first ("what do you deliver?"), both leading to the same architecture map
+- **8 standard functions** with descriptions and typical systems (Finance, Governance, People, Fundraising, Communications, Service Delivery, Operations, Data & Reporting)
+- **10 service templates** with auto-populated tool suggestions (Advice sessions, Grant distribution, Youth programmes, and more)
+- **System suggestions** tailored by organisation type and size
+- **TechFreedom risk assessment** (optional) — scores systems across 5 dimensions: jurisdiction, continuity, surveillance, lock-in, and cost exposure
+- **27 pre-scored known tools** with detailed pricing data for automatic cost estimation
+- **Smart cost estimation** with per-seat pricing, tier selection, and penetration rates
+- **Live architecture map sidebar** showing your map as you build it
+- **Mermaid diagram generation** for visual architecture maps
+- **Cost analysis** with overlap detection
+- **JSON export** of complete architecture data
+- **WCAG 2.1 AA accessible** — keyboard navigable, screen reader compatible, axe-core tested
+- **Mobile responsive** design with mobile-first approach
+- **Offline-first** — all data stored in localStorage, no server required
 
 ## Quick Start
 
 ```bash
-# Clone the template (strips git history)
-npx degit dataforaction-tom/claude-code-template my-new-project
-
-# Set up
-cd my-new-project
-bash setup.sh
+git clone https://github.com/dataforaction-tom/stackmap.git
+cd stackmap
+npm install
+npm run dev
 ```
 
-The setup script will:
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
-1. Ask for your project name and description
-2. Stamp today's date into the tracking files
-3. Offer to install a global `~/.claude/CLAUDE.md` if you don't have one
-4. Add local/temporary files to `.gitignore`
-5. Optionally initialise a git repo
-6. Clean up after itself (removes `setup.sh` and the global template file)
+## Screenshots
 
-Then edit `CLAUDE.md` to fill in your project's architecture, commands, and standards, and `PLAN.md` to define what you're building.
+> Screenshots coming soon. The application features a warm forest-green design with a guided wizard interface, live sidebar map, and Mermaid diagram views.
 
-## What's Included
+## Tech Stack
 
-```
-project/
-├── CLAUDE.md               ← Project config (committed to git)
-├── CLAUDE.local.md         ← Personal overrides (.gitignored)
-├── CLAUDE.global.md        ← Template for ~/.claude/CLAUDE.md (removed by setup.sh)
-├── PLAN.md                 ← Living plan with tasks and decisions
-├── STATE.md                ← State diagram and component status
-├── MISTAKES.md             ← Error log and lessons learned
-├── HANDOFF.md              ← Session handoff notes (.gitignored)
-├── setup.sh                ← One-time setup (removes itself)
-├── README.md               ← This file
-└── .claude/
-    ├── commands/
-    │   ├── catchup.md      ← /catchup — orient yourself at session start
-    │   ├── commit-push-pr.md ← /commit-push-pr — lint, test, commit, push
-    │   ├── handoff.md      ← /handoff — write session notes, update tracking
-    │   ├── reflect.md      ← /reflect — capture mistakes and patterns
-    │   ├── review.md       ← /review — self-check against standards
-    │   ├── status.md       ← /status — quick status from tracking files
-    │   └── techdebt.md     ← /techdebt — find and fix safe tech debt
-    ├── agents/
-    │   ├── code-reviewer.md    ← Staff engineer code review
-    │   ├── code-simplifier.md  ← Reduce complexity after a feature
-    │   ├── plan-reviewer.md    ← Catch gaps before building
-    │   └── verify-app.md       ← End-to-end verification
-    └── skills/
-        ├── README.md       ← How to create project-specific skills
-        └── docs-updater/
-            └── SKILL.md    ← Maintains user guide + changelog from git changes
-```
+| Layer | Technology |
+|-------|-----------|
+| Framework | [Next.js 14](https://nextjs.org/) (App Router) |
+| Language | [TypeScript](https://www.typescriptlang.org/) (strict mode) |
+| Styling | [Tailwind CSS](https://tailwindcss.com/) with custom design tokens |
+| Forms | [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) validation |
+| Diagrams | [Mermaid.js](https://mermaid.js.org/) |
+| Storage | localStorage (browser) |
+| Testing | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/) |
+| Accessibility | [jest-axe](https://github.com/nickcolley/jest-axe) (automated) + manual keyboard testing |
+| Fonts | [Source Serif 4](https://fonts.google.com/specimen/Source+Serif+4) (display) + [Figtree](https://fonts.google.com/specimen/Figtree) (body) |
 
-### Tracking Files
-
-| File | Purpose | In git? |
-|------|---------|---------|
-| `CLAUDE.md` | Project architecture, commands, standards, lessons learned | Yes |
-| `CLAUDE.local.md` | Your personal environment and preferences | No |
-| `PLAN.md` | Tasks, decisions, open questions, scope | Yes |
-| `STATE.md` | Mermaid state diagram, component status table | Yes |
-| `MISTAKES.md` | What went wrong and what to do instead | Yes |
-| `HANDOFF.md` | What happened last session, what's next | No |
-
-### Slash Commands
-
-| Command | When to use |
-|---------|-------------|
-| `/catchup` | Start of session — reads git changes and tracking files, tells you where things stand |
-| `/status` | Quick check — what's done, in progress, and next |
-| `/review` | After completing work — checks against standards and MISTAKES.md, runs lint/build |
-| `/reflect` | End of session — captures mistakes and patterns, updates CLAUDE.md and MISTAKES.md |
-| `/handoff` | End of session — writes handoff notes, updates PLAN.md and STATE.md |
-| `/techdebt` | Housekeeping — finds and fixes safe technical debt |
-| `/commit-push-pr` | Ship it — lint, build, test, commit, push, optionally create PR |
-
-### Subagents
-
-Subagents run in their own context window, keeping your main session clean.
-
-| Agent | What it does |
-|-------|--------------|
-| `code-reviewer` | Reviews changes as a staff engineer — severity-rated findings |
-| `code-simplifier` | Simplifies code after a feature is complete without changing behaviour |
-| `plan-reviewer` | Reviews a plan before implementation — catches gaps, risks, over-engineering |
-| `verify-app` | Runs build, lint, tests, and checks features work end-to-end |
-
-### Skills
-
-Skills are invoked via natural language — Claude decides when to use them based on what you ask. See `.claude/skills/README.md` for how to create your own.
-
-| Skill | What it does |
-|-------|--------------|
-| `docs-updater` | Reviews git changes and updates end-user documentation — a user guide and structured changelog in markdown, ready for mkdocs hosting |
-
-## The Core Workflow
-
-### Starting a session
+## Project Structure
 
 ```
-/catchup
+src/
+├── app/                    # Next.js App Router pages and layouts
+│   ├── wizard/             # Wizard flow (function-first and service-first paths)
+│   ├── view/               # Diagram, table, and analysis views
+│   └── techfreedom/        # TechFreedom risk analysis views
+├── components/
+│   ├── ui/                 # Base UI components (Button, Card, Input, Select, etc.)
+│   ├── wizard/             # Wizard-specific components (steps, forms, sidebar)
+│   ├── techfreedom/        # Risk badge, radar chart, risk details
+│   └── layout/             # Header, sidebar, footer
+├── lib/
+│   ├── types.ts            # Core TypeScript type definitions
+│   ├── schema.ts           # Zod validation schemas
+│   ├── functions.ts        # Standard functions data and helpers
+│   ├── function-templates.ts  # System suggestions per function/org type/size
+│   ├── service-templates.ts   # Service templates with suggested tools
+│   ├── cost-estimates.ts      # Cost estimation with tiered pricing
+│   ├── storage/            # Storage adapters (localStorage)
+│   ├── diagram/            # Mermaid diagram generation
+│   └── techfreedom/        # Risk scoring, known tools database, API
+├── hooks/                  # React hooks (useArchitecture, useWizard, etc.)
+└── styles/                 # Global CSS with design tokens
+
+tests/
+├── unit/                   # Unit tests for lib/ modules
+├── components/             # Component tests with accessibility checks
+└── e2e/                    # Playwright end-to-end tests
 ```
 
-This reads the git diff, handoff notes, plan, and state files, then gives you a concise summary of where things stand.
+## Development
 
-### Working
+### Commands
 
-For any non-trivial task, start in **plan mode** (`Shift+Tab` twice in Claude Code). Have Claude research and plan before writing code. For important plans, use the `plan-reviewer` subagent to get a second opinion before building.
-
-If Claude makes a mistake, tell it:
-
-> "Add what just happened to MISTAKES.md so you don't repeat it."
-
-If something goes wrong twice, don't keep fixing — `/clear` and start fresh with a better prompt.
-
-### Ending a session
-
-```
-/reflect
-/handoff
-/commit-push-pr
+```bash
+npm run dev           # Start development server
+npm run build         # Production build
+npm run start         # Start production server
+npm run test          # Run unit + component tests
+npm run test:watch    # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
+npm run lint          # ESLint
+npm run typecheck     # TypeScript type checking
 ```
 
-This captures learnings, writes handoff notes, updates the tracking files, and ships.
+### Testing
 
-### The Improvement Flywheel
+Stackmap follows a strict TDD workflow (red, green, refactor). The test suite currently includes **335 tests across 30 test files**.
 
-```
-Mistakes → MISTAKES.md → CLAUDE.md rules → Better agent → Fewer mistakes
-```
+Every component test includes an accessibility check using jest-axe:
 
-Periodically review MISTAKES.md. When a pattern recurs, promote it to a permanent rule in CLAUDE.md. Delete the promoted entry from MISTAKES.md to keep things focused.
-
-## How the Files Fit Together
-
-Claude Code loads CLAUDE.md files automatically at the start of every session. Here's the hierarchy:
-
-```
-~/.claude/CLAUDE.md              ← Global: your preferences across ALL projects
-│
-├── project/CLAUDE.md            ← Project: architecture, commands, standards (git)
-│   ├── CLAUDE.local.md          ← Local: personal overrides (.gitignored)
-│   └── src/api/CLAUDE.md        ← Subdirectory: loaded on-demand when working there
+```typescript
+it('has no accessibility violations', async () => {
+  const { container } = render(<MyComponent />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
 ```
 
-**Loading rules:**
-- **Ancestors** always load at startup (Claude walks up the directory tree)
-- **Descendants** load lazily (only when Claude reads files in that directory)
-- **Siblings** never load (working in `frontend/` won't pull in `backend/CLAUDE.md`)
+### Code Standards
 
-The other tracking files (PLAN.md, STATE.md, etc.) are **not** auto-loaded — they're read by the slash commands when needed, which keeps Claude's context clean.
+- **TypeScript**: Strict mode, no `any` types, prefer interfaces over type aliases for objects
+- **React**: Functional components only, named exports (no default exports), props interfaces named `{Component}Props`
+- **Styling**: Tailwind utility classes, mobile-first, CSS variables for design tokens
+- **Accessibility**: WCAG 2.1 AA minimum, keyboard navigation, visible focus indicators, semantic HTML, no information conveyed by colour alone
 
-## Key Principles
+### Verification Checklist
 
-These are the patterns that consistently produce the best results:
+Before any change is considered complete:
 
-**1. Give Claude a way to verify its work.**
-This is the single most important thing. Tests, builds, lints — whatever makes sense for your project. A verification loop alone will 2–3x the quality of output.
+1. `npm run lint` passes
+2. `npm run typecheck` passes
+3. `npm run test` passes
+4. Manual keyboard navigation works
+5. No axe-core accessibility violations
 
-**2. Keep CLAUDE.md concise.**
-~150 instructions is the practical limit. Beyond that, Claude starts ignoring things. If Claude already does something right without being told, don't add it.
+## Updating Data
 
-**3. Use `/clear` aggressively.**
-Between unrelated tasks. After two failed corrections. Context pollution is the primary failure mode, not Claude's capabilities.
+Stackmap's suggestions, templates, and known tools are defined in TypeScript files in `src/lib/`. Here is how to update each data source.
 
-**4. Plan before you build.**
-Use plan mode for every non-trivial task. For big projects, plan conversationally first (in Claude.ai or plan mode), then execute.
+### Known Tools Database
 
-**5. Record mistakes immediately.**
-The correction you make today prevents the same mistake tomorrow.
+**File**: `src/lib/techfreedom/tools.ts`
 
-## Customising
+This file contains the `KNOWN_TOOLS` array — approximately 27 pre-scored tools with risk assessments and pricing data. Each entry is a `KnownTool` object.
 
-This template is a starting point. As you use it:
+To add a new tool:
 
-- **Add project-specific verification** to the CLAUDE.md verification section
-- **Create skills** in `.claude/skills/` for tasks you repeat daily
-- **Add slash commands** in `.claude/commands/` for your common workflows
-- **Push improvements back** to this template repo when you find patterns that work across projects
+```typescript
+{
+  slug: 'tool-slug',              // URL-safe unique identifier
+  name: 'Tool Name',             // Display name
+  provider: 'Provider Company',  // Who makes it
+  category: 'Category',          // e.g. 'Productivity', 'Communication', 'Finance'
+  score: {
+    jurisdiction: 3,             // 1 (low risk) to 5 (critical) — where data is stored/processed
+    continuity: 2,               // 1-5 — risk of service disappearing or changing terms
+    surveillance: 3,             // 1-5 — data mining and telemetry concerns
+    lockIn: 4,                   // 1-5 — how hard it is to leave
+    costExposure: 3,             // 1-5 — risk of price increases
+    isAutoScored: true,          // true = from database, false = user-provided
+  },
+  keyRisks: 'Plain-English description of the main risks',
+  estimatedAnnualCost: 1200,     // Optional fallback cost estimate (for ~15 users)
+  pricing: {                     // Optional detailed pricing model
+    model: 'tiered',             // 'per_seat' | 'flat' | 'tiered' | 'free'
+    penetrationRate: 0.8,        // 0.0-1.0 — what fraction of staff need licences
+    tiers: [
+      { name: 'Free', annualPerSeat: 0, maxUsers: 10, recommended: true },
+      { name: 'Pro', annualPerSeat: 96, minUsers: 1 },
+      { name: 'Enterprise', annualPerSeat: 180, minUsers: 50 },
+    ],
+  },
+}
+```
 
-## Background
+**Pricing model options**:
+- `per_seat` — simple per-user annual cost, uses `annualPerSeat`
+- `tiered` — multiple tiers with different per-seat prices, tier selected by user count
+- `flat` — flat annual fee regardless of users, uses `flatAnnual`
+- `free` — no cost
 
-For the full research and rationale behind this template, see the companion guide which covers CLAUDE.md mechanics, context management, and the source material this template draws from.
+**Tier selection logic** (`cost-estimates.ts`): The system picks the cheapest eligible tier that fits the user count (respecting `minUsers` and `maxUsers`), preferring any tier marked `recommended: true`.
 
-## Further Reading
+### Service Templates
 
-- [Boris Cherny's personal workflow](https://www.threads.com/@boris_cherny/post/DTBVlMIkpcm) — The creator's 13-step setup
-- [Boris Cherny's team tips](https://www.threads.com/@boris_cherny/post/DUMZr4VElyb) — 10 tips from the Claude Code team
-- [How Anthropic Teams Use Claude Code](https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf) — Internal case studies from 10 departments
-- [Anthropic's official best practices](https://code.claude.com/docs/en/best-practices)
-- [Anthropic's CLAUDE.md guide](https://claude.com/blog/using-claude-md-files)
-- [The Complete Guide to CLAUDE.md](https://www.builder.io/blog/claude-md-guide) — Steve Krouse's walkthrough
-- [Claude Code Best Practices compilation](https://rosmur.github.io/claudecode-best-practices/) — Community aggregation
+**File**: `src/lib/service-templates.ts`
 
-## Licence
+The `SERVICE_TEMPLATES` array contains templates shown in the service-first wizard path. Each template has a name, description, and list of suggested tool names.
 
-Do whatever you want with this. No attribution needed.
+To add a new template:
+
+```typescript
+{
+  name: 'Employment support',
+  description: 'Helping people find and maintain employment',
+  suggestedTools: ['Salesforce', 'Microsoft 365', 'Zoom', 'Google Workspace'],
+}
+```
+
+Tool names in `suggestedTools` should match names in the known tools database (`KNOWN_TOOLS`) where possible, so that risk scores and pricing can be looked up automatically.
+
+### Function System Suggestions
+
+**File**: `src/lib/function-templates.ts`
+
+The `SUGGESTIONS` record maps each `StandardFunction` to an array of tool suggestions. Each suggestion can be filtered by organisation type and size.
+
+To add a suggestion:
+
+```typescript
+{
+  name: 'ToolName',                    // Should match KNOWN_TOOLS where possible
+  description: 'Why this is relevant',
+  orgTypes: ['charity', 'council'],    // Optional — only show for these org types
+  excludeTypes: ['private_business'],  // Optional — hide for these org types
+  sizes: ['micro', 'small'],           // Optional — only show for these sizes
+}
+```
+
+If `orgTypes`, `excludeTypes`, and `sizes` are all omitted, the suggestion appears for every organisation.
+
+### Cost Estimation
+
+**File**: `src/lib/cost-estimates.ts`
+
+The cost estimation system works as follows:
+
+1. If a tool has `pricing` data, the system uses per-seat calculation with tier selection
+2. The `penetrationRate` (0.0-1.0) determines what fraction of staff need licences
+3. `DEFAULT_STAFF` provides fallback headcounts when the org has not specified staff numbers:
+   - `micro`: 3 staff
+   - `small`: 15 staff
+   - `medium`: 60 staff
+   - `large`: 200 staff
+4. If no `pricing` data exists, the system falls back to `estimatedAnnualCost` scaled by a ratio based on 15 users as the baseline
+
+### Standard Functions
+
+**File**: `src/lib/functions.ts`
+
+The `STANDARD_FUNCTIONS` array defines the 8 built-in function categories. Each has a `type` (machine key), `name` (display label), `description`, and `typicalSystems` array.
+
+To add a new standard function:
+
+1. Add the type to the `StandardFunction` union in `src/lib/types.ts`
+2. Add the definition to `STANDARD_FUNCTIONS` in `src/lib/functions.ts`
+3. Add corresponding suggestions in `src/lib/function-templates.ts`
+4. Update tests
+
+## Configuration
+
+### TechFreedom Risk Assessment
+
+TechFreedom is an optional feature that scores systems across 5 risk dimensions:
+
+| Dimension | What it measures |
+|-----------|-----------------|
+| **Jurisdiction** | Where data is stored/processed and under which legal regime |
+| **Continuity** | Risk of the service disappearing, being acquired, or changing terms |
+| **Surveillance** | Extent of data mining, telemetry, and advertising profiles |
+| **Lock-in** | How difficult it is to export data and migrate away |
+| **Cost Exposure** | Risk of price increases, per-seat cost escalation |
+
+Each dimension is scored 1-5 (low to critical). The feature has a **two-tier toggle**:
+
+1. **App-level**: An administrator can enable or disable TechFreedom globally
+2. **Org-level**: Individual users can opt out of TechFreedom for their architecture, even when it is enabled at the app level
+
+### Organisation Types
+
+Stackmap supports the following organisation types, which affect system suggestions:
+
+- `charity` — Registered charities
+- `social_enterprise` — Social enterprises and CICs
+- `council` — Local councils and public sector
+- `cooperative` — Cooperatives
+- `private_business` — Private sector businesses
+- `other` — Any other organisation type
+
+### Organisation Sizes
+
+Size bands determine default staff counts for cost estimation and filter system suggestions:
+
+| Size | Staff Range | Default Staff Count |
+|------|-------------|-------------------|
+| Micro | 1-5 | 3 |
+| Small | 6-25 | 15 |
+| Medium | 26-100 | 60 |
+| Large | 100+ | 200 |
+
+## Design System
+
+Stackmap uses a warm forest-green palette with amber accents, designed to feel trustworthy and accessible rather than corporate:
+
+- **Primary**: Forest green (`#3f8856` / primary-500)
+- **Accent**: Warm amber-orange (`#ea5f22` / accent-500)
+- **Sage**: Muted green for success states (`#788866` / sage-500)
+- **Surface**: Warm off-white backgrounds (`#faf8f5` / surface-50)
+
+Typography uses **Source Serif 4** for display headings and **Figtree** for body text.
+
+## License
+
+[MIT](LICENSE)
+
+## Credits
+
+Built by [The Good Ship](https://thegoodship.org) and [tomcw.xyz](https://tomcw.xyz).
+
+Inspired by GDS Local's [Sourcing the Stack](https://www.local.gov.uk) initiative and the need for radically simpler architecture tooling in the VCSE sector.

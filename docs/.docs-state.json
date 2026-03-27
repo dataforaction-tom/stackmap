@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "lastUpdated": "2026-03-27",
+  "pages": {
+    "index.md": {
+      "status": "current",
+      "lastUpdated": "2026-03-27",
+      "coversVersion": "0.1.0"
+    },
+    "user-guide.md": {
+      "status": "current",
+      "lastUpdated": "2026-03-27",
+      "coversVersion": "0.1.0"
+    },
+    "changelog.md": {
+      "status": "current",
+      "lastUpdated": "2026-03-27",
+      "coversVersion": "0.1.0"
+    }
+  },
+  "pendingUpdates": [],
+  "notes": "Initial documentation created covering all Phase 1, 2, and 2.5 features. Service-first path documented from spec but not yet implemented (Phase 2 incomplete). GitHub storage (Phase 3) and additional views (Phase 4) not yet documented as they are not built."
+}
