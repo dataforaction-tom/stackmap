@@ -33,6 +33,11 @@ export function Footer() {
                   Diagram
                 </Link>
               </li>
+              <li>
+                <Link href="/docs/" className="hover:text-white transition-colors">
+                  Documentation
+                </Link>
+              </li>
             </ul>
           </div>
 
