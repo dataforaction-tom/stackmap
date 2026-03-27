@@ -22,8 +22,16 @@ npm-debug.log*
 
 # local env files
 .env*.local
+
+# claude code / project files
+CLAUDE.md
 CLAUDE.local.md
-.claude/settings.local.json
+CLAUDE.global.md
+PLAN.md
+STATE.md
+MISTAKES.md
+stackmap-spec.md
+.claude/
 
 # vercel
 .vercel
