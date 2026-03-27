@@ -954,6 +954,216 @@ export const KNOWN_TOOLS: KnownTool[] = [
     },
   },
 
+  // --- AI: Privacy-focused & local models ---
+  {
+    slug: 'mistral',
+    name: 'Mistral AI',
+    provider: 'Mistral AI',
+    category: 'AI',
+    score: {
+      jurisdiction: 1,
+      continuity: 3,
+      surveillance: 2,
+      lockIn: 2,
+      costExposure: 3,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'French/EU jurisdiction — strong GDPR compliance; models available for self-hosting; Le Chat free tier available; API pricing competitive but can scale; newer company with less track record than OpenAI',
+    estimatedAnnualCost: 240,
+    pricing: {
+      model: 'tiered',
+      penetrationRate: 0.2,
+      tiers: [
+        { name: 'Le Chat Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
+        { name: 'Le Chat Pro', annualPerSeat: 240 },
+        { name: 'API (pay-as-you-go)', annualPerSeat: 120 },
+      ],
+      notes: 'EU-headquartered. Models also available for self-hosting via open weights',
+    },
+  },
+  {
+    slug: 'ollama',
+    name: 'Ollama',
+    provider: 'Ollama (open source)',
+    category: 'AI',
+    score: {
+      jurisdiction: 1,
+      continuity: 2,
+      surveillance: 1,
+      lockIn: 1,
+      costExposure: 1,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'Runs entirely on your own hardware — no data leaves your network; open source; supports many model formats (Llama, Mistral, Gemma, etc.); zero vendor dependency; requires technical setup and capable hardware; no ongoing cost beyond electricity',
+    estimatedAnnualCost: 0,
+    pricing: {
+      model: 'free',
+      notes: 'Free and open source. Runs locally — needs a machine with 8GB+ RAM (16GB+ recommended for larger models)',
+    },
+  },
+  {
+    slug: 'lm-studio',
+    name: 'LM Studio',
+    provider: 'LM Studio',
+    category: 'AI',
+    score: {
+      jurisdiction: 1,
+      continuity: 2,
+      surveillance: 1,
+      lockIn: 1,
+      costExposure: 1,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'Desktop app for running AI models locally; no data sent externally; supports GGUF models from Hugging Face; free for personal use; no lock-in — uses standard model formats; requires decent hardware',
+    estimatedAnnualCost: 0,
+    pricing: {
+      model: 'free',
+      notes: 'Free for personal and community use. Runs locally on Mac/Windows/Linux',
+    },
+  },
+  {
+    slug: 'jan-ai',
+    name: 'Jan',
+    provider: 'Jan (open source)',
+    category: 'AI',
+    score: {
+      jurisdiction: 1,
+      continuity: 2,
+      surveillance: 1,
+      lockIn: 1,
+      costExposure: 1,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'Open source ChatGPT alternative that runs entirely offline; no data leaves your device; supports multiple model formats; free; early-stage project but active development; requires 8GB+ RAM',
+    estimatedAnnualCost: 0,
+    pricing: {
+      model: 'free',
+      notes: 'Free and open source. Privacy-first alternative to ChatGPT',
+    },
+  },
+  {
+    slug: 'greenpt',
+    name: 'GreenPT',
+    provider: 'GreenPT',
+    category: 'AI',
+    score: {
+      jurisdiction: 1,
+      continuity: 3,
+      surveillance: 1,
+      lockIn: 1,
+      costExposure: 2,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'EU-based; focused on sustainable and ethical AI; lower carbon footprint than US hyperscalers; smaller model selection but growing; privacy-first approach; newer service with less established track record',
+    estimatedAnnualCost: 120,
+    pricing: {
+      model: 'tiered',
+      penetrationRate: 0.1,
+      tiers: [
+        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
+        { name: 'Pro', annualPerSeat: 120 },
+      ],
+      notes: 'EU-hosted, sustainability-focused AI assistant',
+    },
+  },
+  {
+    slug: 'hugging-face',
+    name: 'Hugging Face',
+    provider: 'Hugging Face',
+    category: 'AI',
+    score: {
+      jurisdiction: 2,
+      continuity: 2,
+      surveillance: 1,
+      lockIn: 1,
+      costExposure: 2,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'US company but open-source ethos; hosts thousands of free models; Inference API for cloud usage; models downloadable for local use; no lock-in — standard model formats; Spaces can be self-hosted',
+    estimatedAnnualCost: 0,
+    pricing: {
+      model: 'tiered',
+      penetrationRate: 0.05,
+      tiers: [
+        { name: 'Free', annualPerSeat: 0, maxUsers: 999, recommended: true },
+        { name: 'Pro', annualPerSeat: 108 },
+        { name: 'Enterprise', annualPerSeat: 240, minUsers: 5 },
+      ],
+      notes: 'Hub is free. Pro for faster inference. Models downloadable for self-hosting',
+    },
+  },
+  {
+    slug: 'open-webui',
+    name: 'Open WebUI',
+    provider: 'Open WebUI (open source)',
+    category: 'AI',
+    score: {
+      jurisdiction: 1,
+      continuity: 2,
+      surveillance: 1,
+      lockIn: 1,
+      costExposure: 1,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'Self-hosted ChatGPT-style interface for local models; connects to Ollama or any OpenAI-compatible API; all data stays on your server; fully open source; requires technical setup; multi-user support',
+    estimatedAnnualCost: 0,
+    pricing: {
+      model: 'free',
+      notes: 'Free and open source. Self-hosted web UI for Ollama and other local AI models',
+    },
+  },
+  {
+    slug: 'llama',
+    name: 'Meta Llama',
+    provider: 'Meta',
+    category: 'AI',
+    score: {
+      jurisdiction: 1,
+      continuity: 2,
+      surveillance: 1,
+      lockIn: 1,
+      costExposure: 1,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'Open-weight models — run anywhere with no data sent to Meta; available via Ollama, LM Studio, etc.; no ongoing cost; various sizes (8B to 405B parameters) for different hardware; Meta licence has some commercial use restrictions for very large deployments',
+    estimatedAnnualCost: 0,
+    pricing: {
+      model: 'free',
+      notes: 'Free open-weight models. Run via Ollama or LM Studio on your own hardware',
+    },
+  },
+  {
+    slug: 'privateai',
+    name: 'Private AI',
+    provider: 'Private AI',
+    category: 'AI',
+    score: {
+      jurisdiction: 2,
+      continuity: 3,
+      surveillance: 1,
+      lockIn: 2,
+      costExposure: 3,
+      isAutoScored: true,
+    },
+    keyRisks:
+      'Canadian jurisdiction; specialises in PII detection and redaction; can run on-premises; designed for data privacy compliance; useful for organisations handling sensitive beneficiary data; commercial licensing',
+    estimatedAnnualCost: 2400,
+    pricing: {
+      model: 'flat',
+      flatAnnual: 2400,
+      penetrationRate: 0.05,
+      notes: 'Enterprise data privacy tool. On-premises option available. Contact for pricing.',
+    },
+  },
+
   // --- Website & Hosting ---
   {
     slug: 'squarespace',
