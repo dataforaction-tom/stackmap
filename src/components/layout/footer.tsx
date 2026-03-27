@@ -43,6 +43,19 @@ export function Footer() {
               Stackmap helps charities, social enterprises, co-operatives, councils, and
               businesses understand their technology landscape.
             </p>
+            <p className="text-sm text-primary-300 leading-relaxed mt-3">
+              Risk assessment powered by{' '}
+              <a
+                href="https://techfreedom.eu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary-200 hover:text-white transition-colors underline underline-offset-2"
+              >
+                TechFreedom
+              </a>
+              . Thank you to the TechFreedom programme for allowing the inclusion of
+              their risk lens and assessment framework.
+            </p>
           </div>
         </div>
 
