@@ -1,4 +1,4 @@
-import type { Architecture } from '@/lib/types';
+import type { Architecture, System } from '@/lib/types';
 
 // ─── Label sanitisation ───
 
@@ -30,6 +30,30 @@ function integrationLabel(description?: string, type?: string): string {
   return INTEGRATION_TYPE_LABELS[type ?? 'unknown'] ?? 'Integration';
 }
 
+// ─── Cost formatting for diagram labels ───
+
+function annualiseCost(system: System): number | null {
+  if (!system.cost) return null;
+  if (system.cost.model === 'free') return 0;
+  if (system.cost.period === 'monthly') return system.cost.amount * 12;
+  return system.cost.amount;
+}
+
+function systemLabel(system: System, _owners?: Architecture['owners']): string {
+  let label = sanitiseLabel(system.name);
+  const annual = annualiseCost(system);
+  if (annual !== null && annual > 0) {
+    label = `${label} - £${annual.toLocaleString('en-GB')}/yr`;
+  }
+  return label;
+}
+
+function ownerName(ownerId: string | undefined, owners: Architecture['owners']): string | null {
+  if (!ownerId) return null;
+  const owner = owners.find((o) => o.id === ownerId);
+  return owner ? sanitiseLabel(owner.name) : null;
+}
+
 // ─── Main diagram: functions as subgraphs, systems as nodes, integrations as edges ───
 
 export function generateMermaidDiagram(arch: Architecture): string {
@@ -49,7 +73,7 @@ export function generateMermaidDiagram(arch: Architecture): string {
 
     const fnSystems = arch.systems.filter((s) => s.functionIds.includes(fn.id));
     for (const sys of fnSystems) {
-      const sysLabel = sanitiseLabel(sys.name);
+      const sysLabel = systemLabel(sys, arch.owners);
       lines.push(`    ${sys.id}[${sysLabel}]`);
       systemsPlaced.add(sys.id);
     }
@@ -61,8 +85,34 @@ export function generateMermaidDiagram(arch: Architecture): string {
   const orphans = arch.systems.filter((s) => !systemsPlaced.has(s.id));
   if (orphans.length > 0) {
     for (const sys of orphans) {
-      const sysLabel = sanitiseLabel(sys.name);
+      const sysLabel = systemLabel(sys, arch.owners);
       lines.push(`  ${sys.id}[${sysLabel}]`);
+    }
+  }
+
+  // Services subgraph
+  if (arch.services.length > 0) {
+    lines.push('  subgraph Services');
+    for (const svc of arch.services) {
+      lines.push(`    ${svc.id}[${sanitiseLabel(svc.name)}]`);
+    }
+    lines.push('  end');
+
+    // Service-to-system edges (dashed)
+    for (const svc of arch.services) {
+      for (const sysId of svc.systemIds) {
+        lines.push(`  ${svc.id} -.-> ${sysId}`);
+      }
+    }
+  }
+
+  // Owner annotations
+  for (const sys of arch.systems) {
+    const name = ownerName(sys.ownerId, arch.owners);
+    if (name) {
+      const ownNodeId = `${sys.id}_owner`;
+      lines.push(`  ${ownNodeId}[/${name}/]`);
+      lines.push(`  ${sys.id} -.- ${ownNodeId}`);
     }
   }
 
@@ -147,6 +197,51 @@ export function generateFunctionDiagram(arch: Architecture): string {
   for (const sys of orphans) {
     const sysLabel = sanitiseLabel(sys.name);
     lines.push(`  ${sys.id}[${sysLabel}]`);
+  }
+
+  return lines.join('\n');
+}
+
+// ─── Service diagram: services as subgraphs with their systems ───
+
+export function generateServiceDiagram(arch: Architecture): string {
+  const lines: string[] = ['graph TB'];
+
+  const systemsPlaced = new Set<string>();
+
+  for (const svc of arch.services) {
+    const svcLabel = sanitiseLabel(svc.name);
+    lines.push(`  subgraph ${svcLabel}`);
+
+    const svcSystems = arch.systems.filter((s) => svc.systemIds.includes(s.id));
+    for (const sys of svcSystems) {
+      const sysLabel = systemLabel(sys, arch.owners);
+      lines.push(`    ${sys.id}[${sysLabel}]`);
+      systemsPlaced.add(sys.id);
+    }
+
+    lines.push('  end');
+  }
+
+  // Systems not linked to any service
+  const orphans = arch.systems.filter((s) => !systemsPlaced.has(s.id));
+  if (orphans.length > 0) {
+    lines.push('  subgraph Other');
+    for (const sys of orphans) {
+      const sysLabel = systemLabel(sys, arch.owners);
+      lines.push(`    ${sys.id}[${sysLabel}]`);
+    }
+    lines.push('  end');
+  }
+
+  // Integrations as edges
+  for (const intg of arch.integrations) {
+    const label = integrationLabel(intg.description, intg.type);
+    if (intg.direction === 'two_way') {
+      lines.push(`  ${intg.sourceSystemId} <-->|${label}| ${intg.targetSystemId}`);
+    } else {
+      lines.push(`  ${intg.sourceSystemId} -->|${label}| ${intg.targetSystemId}`);
+    }
   }
 
   return lines.join('\n');

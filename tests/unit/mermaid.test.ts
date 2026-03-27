@@ -3,6 +3,7 @@ import {
   generateMermaidDiagram,
   generateSystemDiagram,
   generateFunctionDiagram,
+  generateServiceDiagram,
   sanitiseLabel,
 } from '@/lib/diagram/mermaid';
 import type { Architecture } from '@/lib/types';
@@ -325,5 +326,92 @@ describe('generateFunctionDiagram', () => {
     // Function diagram focuses on grouping, not connections
     expect(result).not.toContain('-->');
     expect(result).not.toContain('<-->');
+  });
+});
+
+// ─── Services in diagrams ───
+
+describe('generateMermaidDiagram — services', () => {
+  it('renders services as a subgraph when present', () => {
+    const arch = createPopulatedArchitecture();
+    arch.services = [
+      {
+        id: 'svc-1',
+        name: 'Advice sessions',
+        status: 'active',
+        functionIds: ['fn-1'],
+        systemIds: ['sys-1', 'sys-3'],
+      },
+    ];
+    const result = generateMermaidDiagram(arch);
+    expect(result).toContain('subgraph Services');
+    expect(result).toContain('svc-1[Advice sessions]');
+    // Dashed arrows from service to systems
+    expect(result).toContain('svc-1 -.-> sys-1');
+    expect(result).toContain('svc-1 -.-> sys-3');
+  });
+
+  it('renders owner annotations for systems with an owner', () => {
+    const arch = createPopulatedArchitecture();
+    arch.owners = [
+      { id: 'own-1', name: 'Sarah Jones', role: 'Finance Manager', isExternal: false },
+    ];
+    arch.systems[0].ownerId = 'own-1';
+    const result = generateMermaidDiagram(arch);
+    expect(result).toContain('sys-1_owner[/Sarah Jones/]');
+    expect(result).toContain('sys-1 -.- sys-1_owner');
+  });
+
+  it('includes cost in system labels when cost data exists', () => {
+    const arch = createPopulatedArchitecture();
+    arch.systems[0].cost = { amount: 30, period: 'monthly', model: 'subscription' };
+    const result = generateMermaidDiagram(arch);
+    // £30/month = £360/yr
+    expect(result).toMatch(/sys-1\[Xero - £360\/yr\]/);
+  });
+});
+
+// ─── generateServiceDiagram ───
+
+describe('generateServiceDiagram', () => {
+  it('produces valid diagram for empty architecture', () => {
+    const arch = createBlankArchitecture();
+    const result = generateServiceDiagram(arch);
+    expect(result).toContain('graph TB');
+  });
+
+  it('groups systems under service subgraphs', () => {
+    const arch = createPopulatedArchitecture();
+    arch.services = [
+      {
+        id: 'svc-1',
+        name: 'Advice sessions',
+        status: 'active',
+        functionIds: [],
+        systemIds: ['sys-1', 'sys-2'],
+      },
+    ];
+    const result = generateServiceDiagram(arch);
+    expect(result).toContain('subgraph Advice sessions');
+    expect(result).toMatch(/sys-1\[.*Xero.*\]/);
+    expect(result).toMatch(/sys-2\[.*Excel Spreadsheet.*\]/);
+  });
+
+  it('places unlinked systems in Other subgraph', () => {
+    const arch = createPopulatedArchitecture();
+    arch.services = [
+      {
+        id: 'svc-1',
+        name: 'Advice sessions',
+        status: 'active',
+        functionIds: [],
+        systemIds: ['sys-1'],
+      },
+    ];
+    const result = generateServiceDiagram(arch);
+    expect(result).toContain('subgraph Other');
+    // sys-2 and sys-3 not linked to any service
+    expect(result).toMatch(/sys-2\[.*Excel Spreadsheet.*\]/);
+    expect(result).toMatch(/sys-3\[.*Microsoft 365.*\]/);
   });
 });

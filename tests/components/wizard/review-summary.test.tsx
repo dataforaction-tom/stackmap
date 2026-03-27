@@ -89,7 +89,7 @@ describe('ReviewSummary', () => {
   it('renders the heading', () => {
     render(<ReviewSummary />);
     expect(
-      screen.getByRole('heading', { name: /your technology map/i }),
+      screen.getByRole('heading', { name: /technology map for/i }),
     ).toBeInTheDocument();
   });
 

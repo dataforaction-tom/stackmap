@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useArchitecture } from '@/hooks/useArchitecture';
 import { aggregateRisk, totalScore, riskLevel, RISK_DIMENSIONS } from '@/lib/techfreedom/risk';
 import { calculateCostSummary, findSystemOverlaps, formatCurrency } from '@/lib/cost-analysis';
+import { generateMarkdownExport } from '@/lib/export/markdown';
 
 /** Colour accents per function type for visual distinction in the summary */
 const FUNCTION_COLORS: Record<string, string> = {
@@ -36,13 +37,29 @@ export function ReviewSummary() {
     const arch = getArchitecture();
     if (!arch) return;
     const costSummary = calculateCostSummary(arch.systems, arch.functions);
-    const exportData = { ...arch, costSummary };
+    const exportOverlaps = findSystemOverlaps(arch.systems, arch.functions);
+    const techFreedomOn = arch.metadata?.techFreedomEnabled === true;
+    const exportRiskSummary = techFreedomOn ? aggregateRisk(arch.systems) : null;
+    const exportData = { ...arch, costSummary, overlaps: exportOverlaps, ...(exportRiskSummary ? { riskSummary: exportRiskSummary } : {}) };
     const json = JSON.stringify(exportData, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `stackmap-${arch.organisation.name || 'export'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [getArchitecture]);
+
+  const handleExportMarkdown = useCallback(() => {
+    const arch = getArchitecture();
+    if (!arch) return;
+    const markdown = generateMarkdownExport(arch);
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stackmap-${arch.organisation.name || 'export'}.md`;
     a.click();
     URL.revokeObjectURL(url);
   }, [getArchitecture]);
@@ -74,12 +91,37 @@ export function ReviewSummary() {
 
   return (
     <div className="space-y-8">
-      {/* Header with achievement feel */}
-      <div className="space-y-3 max-w-xl">
+      {/* Organisation header */}
+      <div className="space-y-2 max-w-xl">
         <h1 className="text-display-md font-display text-primary-900">
-          Your technology map
+          Technology map for {organisation.name || 'your organisation'}
         </h1>
-        <p className="text-body-lg text-primary-700">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs bg-surface-200 text-primary-700 rounded px-2 py-0.5 font-medium">
+            {organisation.type === 'charity'
+              ? 'Charity'
+              : organisation.type === 'social_enterprise'
+                ? 'Social Enterprise'
+                : organisation.type === 'council'
+                  ? 'Council'
+                  : organisation.type === 'cooperative'
+                    ? 'Cooperative'
+                    : organisation.type === 'private_business'
+                      ? 'Private Business'
+                      : 'Other'}
+          </span>
+          {organisation.size && (
+            <span className="text-xs bg-surface-200 text-primary-700 rounded px-2 py-0.5 font-medium">
+              {organisation.size.charAt(0).toUpperCase() + organisation.size.slice(1)}
+            </span>
+          )}
+          {organisation.staffCount != null && organisation.staffCount > 0 && (
+            <span className="text-xs bg-surface-200 text-primary-700 rounded px-2 py-0.5 font-medium">
+              {organisation.staffCount} staff
+            </span>
+          )}
+        </div>
+        <p className="text-body-lg text-primary-700 pt-1">
           Well done &mdash; you have mapped{' '}
           <strong className="text-primary-900 font-semibold">{totalItems} items</strong> across
           your organisation. Here is the full picture.
@@ -104,21 +146,6 @@ export function ReviewSummary() {
           </div>
         ))}
       </div>
-
-      {/* Organisation */}
-      <section className="bg-surface-100 border border-surface-300 rounded-lg p-4 sm:p-6 space-y-2">
-        <h2 className="font-display font-semibold text-primary-900 text-lg">Organisation</h2>
-        <p className="text-primary-700 text-body">
-          {organisation.name || 'Not set'} &mdash;{' '}
-          {organisation.type === 'charity'
-            ? 'Charity'
-            : organisation.type === 'social_enterprise'
-              ? 'Social Enterprise'
-              : organisation.type === 'council'
-                ? 'Council'
-                : 'Other'}
-        </p>
-      </section>
 
       {/* Functions & Systems — grouped with colour coding */}
       <section className="space-y-4">
@@ -265,16 +292,40 @@ export function ReviewSummary() {
           <h2 className="font-display font-semibold text-primary-900 text-lg">
             Services ({services.length})
           </h2>
-          <ul className="space-y-1" role="list">
-            {services.map((svc) => (
-              <li key={svc.id} className="text-primary-700 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-400 flex-shrink-0" aria-hidden="true" />
-                {svc.name}
-                <span className="text-xs bg-surface-200 text-primary-500 rounded px-1.5 py-0.5">
-                  {svc.status}
-                </span>
+          <ul className="space-y-3" role="list">
+            {services.map((svc) => {
+              const svcFunctions = (svc.functionIds ?? [])
+                .map((fId) => functions.find((f) => f.id === fId))
+                .filter(Boolean);
+              const svcSystems = (svc.systemIds ?? [])
+                .map((sId) => systems.find((s) => s.id === sId))
+                .filter(Boolean);
+              return (
+              <li key={svc.id} className="text-primary-700">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-400 flex-shrink-0" aria-hidden="true" />
+                  {svc.name}
+                  <span className="text-xs bg-surface-200 text-primary-500 rounded px-1.5 py-0.5">
+                    {svc.status}
+                  </span>
+                </div>
+                {(svcFunctions.length > 0 || svcSystems.length > 0) && (
+                  <div className="ml-4 mt-1 flex flex-wrap gap-1.5">
+                    {svcFunctions.map((fn) => (
+                      <span key={fn!.id} className="text-xs bg-violet-100 text-violet-700 rounded px-1.5 py-0.5">
+                        {fn!.name}
+                      </span>
+                    ))}
+                    {svcSystems.map((sys) => (
+                      <span key={sys!.id} className="text-xs bg-sky-100 text-sky-700 rounded px-1.5 py-0.5">
+                        {sys!.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </section>
       )}
@@ -286,20 +337,32 @@ export function ReviewSummary() {
             Data categories ({dataCategories.length})
           </h2>
           <ul className="space-y-1.5" role="list">
-            {dataCategories.map((dc) => (
-              <li key={dc.id} className="text-primary-700 flex items-center gap-2 flex-wrap">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0" aria-hidden="true" />
-                {dc.name}
-                <span className="text-xs bg-surface-200 text-primary-500 rounded px-1.5 py-0.5">
-                  {dc.sensitivity}
-                </span>
-                {dc.containsPersonalData && (
-                  <span className="text-xs bg-accent-100 text-accent-800 rounded px-1.5 py-0.5 font-medium">
-                    Personal data
+            {dataCategories.map((dc) => {
+              const dcSystems = (dc.systemIds ?? [])
+                .map((sId) => systems.find((s) => s.id === sId))
+                .filter(Boolean);
+              return (
+              <li key={dc.id} className="text-primary-700">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0" aria-hidden="true" />
+                  {dc.name}
+                  <span className="text-xs bg-surface-200 text-primary-500 rounded px-1.5 py-0.5">
+                    {dc.sensitivity}
                   </span>
+                  {dc.containsPersonalData && (
+                    <span className="text-xs bg-accent-100 text-accent-800 rounded px-1.5 py-0.5 font-medium">
+                      Personal data
+                    </span>
+                  )}
+                </div>
+                {dcSystems.length > 0 && (
+                  <p className="ml-4 mt-0.5 text-xs text-primary-500">
+                    Held in: {dcSystems.map((s) => s!.name).join(', ')}
+                  </p>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </section>
       )}
@@ -339,14 +402,14 @@ export function ReviewSummary() {
           </h2>
           <ul className="space-y-1.5" role="list">
             {owners.map((owner) => {
-              const ownedSystem = systems.find((s) => s.ownerId === owner.id);
+              const ownedSystems = systems.filter((s) => s.ownerId === owner.id);
               return (
                 <li key={owner.id} className="text-primary-700 flex items-center gap-2 flex-wrap">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0" aria-hidden="true" />
                   <span className="font-medium text-primary-800">{owner.name}</span>
                   {owner.role && (
-                    <span className="text-xs bg-surface-200 text-primary-500 rounded px-1.5 py-0.5">
-                      {owner.role}
+                    <span className="text-xs text-primary-500">
+                      &mdash; {owner.role}
                     </span>
                   )}
                   {owner.isExternal && (
@@ -354,9 +417,9 @@ export function ReviewSummary() {
                       External
                     </span>
                   )}
-                  {ownedSystem && (
+                  {ownedSystems.length > 0 && (
                     <span className="text-sm text-primary-500">
-                      &rarr; {ownedSystem.name}
+                      &middot; {ownedSystems.map((s) => s.name).join(', ')}
                     </span>
                   )}
                 </li>
@@ -518,6 +581,16 @@ export function ReviewSummary() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
             Export as JSON
+          </button>
+          <button
+            type="button"
+            onClick={handleExportMarkdown}
+            className="bg-primary-700 hover:bg-primary-600 text-primary-100 px-5 py-2.5 rounded-lg font-semibold text-sm inline-flex items-center gap-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-900"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            </svg>
+            Export as Markdown
           </button>
           <button
             type="button"
