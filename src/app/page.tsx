@@ -50,27 +50,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── The problem — real stat, not a self-quote ── */}
-      <section className="bg-primary-950 py-12 sm:py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-12">
-            <p className="text-display-lg font-display text-accent-400 whitespace-nowrap flex-shrink-0">
-              54%
-            </p>
-            <div>
-              <p className="text-body-lg text-primary-200 leading-relaxed">
-                of councils already document their architecture &mdash; but use spreadsheets.
-                They&rsquo;re limiting, hard to share, and impossible to aggregate.
-                The same is true across the charity and voluntary sector, often worse.
-              </p>
-              <p className="text-sm text-primary-400 mt-3">
-                GDS Local &ldquo;Sourcing the Stack&rdquo; initiative
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── What you get — staggered, not a grid ── */}
       <section className="bg-surface-50 py-20 sm:py-28">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
