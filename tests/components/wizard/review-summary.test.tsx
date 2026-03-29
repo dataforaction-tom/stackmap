@@ -69,6 +69,8 @@ const mockContextValue: ArchitectureContextValue = {
   save: saveMock,
   clear: vi.fn().mockResolvedValue(undefined),
   getArchitecture: vi.fn().mockReturnValue(fullArchitecture),
+  replaceArchitecture: vi.fn(),
+  setTechFreedomEnabled: vi.fn(),
 };
 
 vi.mock('@/hooks/useArchitecture', () => ({
@@ -294,6 +296,8 @@ describe('ReviewSummary', () => {
         ...mockContextValue,
         architecture: archWithScores,
         getArchitecture: vi.fn().mockReturnValue(archWithScores),
+        replaceArchitecture: vi.fn(),
+        setTechFreedomEnabled: vi.fn(),
       };
 
       // Temporarily override the mock

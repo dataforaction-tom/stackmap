@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { validateArchitectureJson } from '@/lib/import';
-import { parseCsvSystems } from '@/lib/import';
+import { validateArchitectureJson, parseCsvSystems, csvRowsToArchitecture } from '@/lib/import';
+import { CsvPreviewTable } from './csv-preview-table';
 import type { Architecture } from '@/lib/types';
 import type { CsvSystemRow } from '@/lib/import';
 
@@ -204,6 +204,11 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
             <CsvPreviewStep
               rows={csvRows}
               warnings={csvWarnings}
+              onChange={setCsvRows}
+              onImport={(rows) => {
+                const arch = csvRowsToArchitecture(rows, 'My Organisation', 'charity');
+                onImport(arch);
+              }}
               onCancel={onClose}
               firstRef={firstFocusableRef}
             />
@@ -363,18 +368,19 @@ function JsonPreviewStep({ arch, onImport, onCancel, firstRef }: JsonPreviewStep
 interface CsvPreviewStepProps {
   rows: CsvSystemRow[];
   warnings: string[];
+  onChange: (rows: CsvSystemRow[]) => void;
+  onImport: (rows: CsvSystemRow[]) => void;
   onCancel: () => void;
   firstRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-function CsvPreviewStep({ rows, warnings, onCancel, firstRef }: CsvPreviewStepProps) {
+function CsvPreviewStep({ rows, warnings, onChange, onImport, onCancel, firstRef }: CsvPreviewStepProps) {
   return (
     <div className="space-y-4">
-      <div data-csv-preview>
-        <p className="text-sm text-primary-700">
-          Found <span className="font-semibold">{rows.length}</span> systems in the CSV file.
-        </p>
-      </div>
+      <p className="text-sm text-primary-700">
+        Found <span className="font-semibold">{rows.length}</span> systems in the CSV file.
+      </p>
+      <CsvPreviewTable rows={rows} onChange={onChange} />
       {warnings.length > 0 && (
         <ul className="text-sm text-amber-700">
           {warnings.map((w, i) => (
@@ -386,6 +392,7 @@ function CsvPreviewStep({ rows, warnings, onCancel, firstRef }: CsvPreviewStepPr
         <button
           ref={firstRef}
           type="button"
+          onClick={() => onImport(rows)}
           className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
           Import {rows.length} systems

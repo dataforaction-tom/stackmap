@@ -42,6 +42,12 @@ export default function Home() {
                   <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </Link>
+              <Link
+                href="/wizard?import=true"
+                className="text-base px-6 py-3 rounded-lg inline-flex items-center gap-2 border border-surface-300 text-primary-700 hover:bg-surface-50 transition-colors"
+              >
+                Import existing data
+              </Link>
               <span className="text-sm text-primary-500">
                 Your data never leaves your browser.
               </span>

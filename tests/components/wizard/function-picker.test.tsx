@@ -54,6 +54,8 @@ const mockContextValue: ArchitectureContextValue = {
   save: vi.fn().mockResolvedValue(undefined),
   clear: vi.fn().mockResolvedValue(undefined),
   getArchitecture: vi.fn().mockReturnValue(null),
+  replaceArchitecture: vi.fn(),
+  setTechFreedomEnabled: vi.fn(),
 };
 
 vi.mock('@/hooks/useArchitecture', () => ({

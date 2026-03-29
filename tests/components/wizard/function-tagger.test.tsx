@@ -64,6 +64,7 @@ function createMockContext(
     save: vi.fn().mockResolvedValue(undefined),
     clear: vi.fn().mockResolvedValue(undefined),
     getArchitecture: vi.fn().mockReturnValue(null),
+    replaceArchitecture: vi.fn(),
     ...overrides,
   };
 }

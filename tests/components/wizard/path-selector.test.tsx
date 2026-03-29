@@ -13,6 +13,7 @@ vi.mock('next/link', () => ({
 }));
 
 const clearMock = vi.fn().mockResolvedValue(undefined);
+const replaceArchitectureMock = vi.fn();
 
 const emptyArch = {
   organisation: { id: '1', name: '', type: 'charity', createdAt: '', updatedAt: '' },
@@ -38,11 +39,20 @@ const populatedArch = {
 
 let mockArchitecture = emptyArch;
 
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock('@/components/import/import-dialog', () => ({
+  ImportDialog: () => null,
+}));
+
 vi.mock('@/hooks/useArchitecture', () => ({
   useArchitecture: () => ({
     architecture: mockArchitecture,
     isLoading: false,
     clear: clearMock,
+    replaceArchitecture: replaceArchitectureMock,
   }),
 }));
 
@@ -132,6 +142,11 @@ describe('PathSelectorPage', () => {
     await user.click(screen.getByRole('button', { name: /start fresh/i }));
     await user.click(screen.getByRole('button', { name: /yes, clear everything/i }));
     expect(clearMock).toHaveBeenCalled();
+  });
+
+  it('renders an import button', () => {
+    render(<PathSelectorPage />);
+    expect(screen.getByRole('button', { name: /import/i })).toBeInTheDocument();
   });
 
   it('cancels confirmation with Keep my data', async () => {
