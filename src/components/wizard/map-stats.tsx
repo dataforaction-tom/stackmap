@@ -8,9 +8,12 @@ export function MapStats() {
 
   const { functions, systems, integrations, owners } = architecture;
 
+  const sharedCount = systems.filter((s) => s.functionIds.length > 1).length;
+
   const stats = [
     { label: 'function', count: functions.length, icon: '\u25aa' },
     { label: 'system', count: systems.length, icon: '\u25cf' },
+    { label: 'shared', count: sharedCount, icon: '\u229a' },
     { label: 'integration', count: integrations.length, icon: '\u27f7' },
     { label: 'owner', count: owners.length, icon: '\u25c9' },
   ].filter((s) => s.count > 0);
