@@ -294,6 +294,24 @@ export function ReviewSummary() {
               </span>
             )}
           </div>
+          <div className="bg-white border border-surface-200 rounded-lg p-4 mt-3 space-y-2">
+            <p className="text-sm text-primary-700 leading-relaxed">
+              Want help improving these scores? The TechFreedom programme offers cohort-based
+              support for organisations looking to reduce technology risk, plus bespoke
+              guidance for more complex stacks.
+            </p>
+            <a
+              href="https://techfreedom.eu/programme/#signup-cta"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:text-accent-800 hover:underline"
+            >
+              Learn about TechFreedom support
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+            </a>
+          </div>
         </section>
       )}
 
