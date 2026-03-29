@@ -92,3 +92,69 @@ export function csvRowsToArchitecture(
     },
   };
 }
+
+export function mergeCsvIntoArchitecture(
+  rows: CsvSystemRow[],
+  existing: Architecture,
+): Architecture {
+  const now = new Date().toISOString();
+
+  // Build map of existing functions by type for reuse
+  const functionIdByType = new Map<string, string>();
+  for (const fn of existing.functions) {
+    functionIdByType.set(fn.type, fn.id);
+  }
+
+  // Find new functions needed
+  const newFunctions: OrgFunction[] = [];
+  for (const row of rows) {
+    if (row.matchedFunction && !functionIdByType.has(row.matchedFunction)) {
+      const fn: OrgFunction = {
+        id: uuidv4(),
+        name: FUNCTION_NAMES[row.matchedFunction] ?? row.matchedFunction,
+        type: row.matchedFunction,
+        isActive: true,
+      };
+      newFunctions.push(fn);
+      functionIdByType.set(row.matchedFunction, fn.id);
+    }
+  }
+
+  // Create new systems
+  const newSystems: System[] = rows.map((row) => {
+    const fnId = row.matchedFunction
+      ? functionIdByType.get(row.matchedFunction)
+      : undefined;
+    const matchedTool = findMatchingTool(row.name, KNOWN_TOOLS);
+
+    return {
+      id: uuidv4(),
+      name: row.name,
+      type: row.matchedType,
+      vendor: row.vendor,
+      hosting: (row.hosting as System['hosting']) ?? 'unknown',
+      status: (row.status as System['status']) ?? 'active',
+      functionIds: fnId ? [fnId] : [],
+      serviceIds: [],
+      cost: row.cost
+        ? {
+            amount: row.cost,
+            period: (row.costPeriod === 'monthly' ? 'monthly' : 'annual') as
+              | 'monthly'
+              | 'annual',
+            model: 'subscription' as const,
+          }
+        : undefined,
+      techFreedomScore: matchedTool?.score
+        ? { ...matchedTool.score, isAutoScored: true }
+        : undefined,
+    };
+  });
+
+  return {
+    ...existing,
+    organisation: { ...existing.organisation, updatedAt: now },
+    functions: [...existing.functions, ...newFunctions],
+    systems: [...existing.systems, ...newSystems],
+  };
+}
