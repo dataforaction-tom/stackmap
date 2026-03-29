@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useArchitecture } from '@/hooks/useArchitecture';
 import { ImportDialog } from '@/components/import/import-dialog';
 import { Input } from '@/components/ui/input';
@@ -31,12 +31,6 @@ export default function PathSelectorPage() {
   const [showImport, setShowImport] = useState(false);
   const router = useRouter();
 
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    if (searchParams.get('import') === 'true') {
-      setShowImport(true);
-    }
-  }, [searchParams]);
 
   const org = architecture?.organisation;
   const orgHasName = Boolean(org?.name?.trim());

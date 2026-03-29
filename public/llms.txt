@@ -1,0 +1,27 @@
+# Stackmap
+
+> Lightweight architecture mapping for social purpose organisations.
+
+Stackmap is a free, open source, browser-based tool that helps charities, social enterprises, councils, and cooperatives map their technology architecture. Users walk through a guided wizard to document their organisational functions, software systems, services, data categories, integrations, and ownership — then export diagrams, cost breakdowns, and risk assessments.
+
+## Key facts
+
+- Runs entirely in the browser (localStorage). No account, no server, no data leaves the device.
+- Built with Next.js, TypeScript, Tailwind CSS, and Mermaid.js for diagrams.
+- Includes TechFreedom risk scoring across five dimensions: jurisdiction, continuity, surveillance, lock-in, and cost exposure.
+- Supports import from JSON (full architecture) and CSV (systems list with fuzzy matching).
+- Designed for non-technical users — plain language, no TOGAF or ArchiMate.
+
+## Who it's for
+
+- Small charities with no IT team
+- Social enterprises managing growth
+- Councils planning LGR transitions
+- Cooperatives and community organisations
+- Anyone who thinks "we should probably document this"
+
+## Links
+
+- Website: https://stackmap.org
+- Source: https://github.com/dataforaction-tom/stackmap
+- TechFreedom programme: https://techfreedom.eu
