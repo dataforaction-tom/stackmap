@@ -71,13 +71,17 @@ function StepLabel({ label, isComplete, isCurrent }: { label: string; isComplete
   );
 }
 
-export function Stepper() {
+interface StepperProps {
+  trailing?: React.ReactNode;
+}
+
+export function Stepper({ trailing }: StepperProps = {}) {
   const pathname = usePathname();
   const steps = pathname.startsWith('/wizard/services') ? SERVICE_FIRST_STEPS : FUNCTION_FIRST_STEPS;
   const currentIndex = steps.findIndex((s) => s.path === pathname);
 
   return (
-    <nav aria-label="Wizard progress" className="w-full max-w-3xl mx-auto px-4 py-6">
+    <nav aria-label="Wizard progress" className="w-full max-w-3xl mx-auto px-4 py-4">
       {/* Mobile compact view */}
       <div className="sm:hidden flex items-center justify-between px-2">
         {currentIndex > 0 ? (
@@ -94,55 +98,75 @@ export function Stepper() {
         <span className="text-sm font-medium text-primary-700 font-body">
           {currentIndex >= 0 ? steps[currentIndex].label : ''} ({currentIndex + 1}/{steps.length})
         </span>
-        {currentIndex < steps.length - 1 && currentIndex >= 0 ? (
-          <Link
-            href={steps[currentIndex + 1].path}
-            className="p-2 text-primary-600 text-sm hover:underline"
-            aria-label={`Next step: ${steps[currentIndex + 1].label}`}
-          >
-            {steps[currentIndex + 1].label} &rarr;
-          </Link>
-        ) : (
-          <span />
+        <div className="flex items-center gap-2">
+          {currentIndex < steps.length - 1 && currentIndex >= 0 ? (
+            <Link
+              href={steps[currentIndex + 1].path}
+              className="p-2 text-primary-600 text-sm hover:underline"
+              aria-label={`Next step: ${steps[currentIndex + 1].label}`}
+            >
+              {steps[currentIndex + 1].label} &rarr;
+            </Link>
+          ) : (
+            <span />
+          )}
+          {trailing}
+        </div>
+      </div>
+      {/* Desktop view — circles with connector lines, labels only on current step */}
+      <div className="hidden sm:flex items-center gap-1">
+        <ol className="flex items-center gap-0 flex-1 min-w-0" role="list">
+          {steps.map((step, index) => {
+            const isComplete = currentIndex > index;
+            const isCurrent = currentIndex === index;
+
+            const circle = (
+              <StepCircle isComplete={isComplete} isCurrent={isCurrent} index={index} />
+            );
+
+            return (
+              <li
+                key={step.path}
+                className="flex items-center flex-shrink-0"
+              >
+                {isComplete ? (
+                  <Link
+                    href={step.path}
+                    className="flex items-center gap-1.5 min-h-[44px] hover:opacity-80 transition-opacity"
+                    title={step.label}
+                  >
+                    {circle}
+                    {isCurrent && (
+                      <StepLabel label={step.label} isComplete={isComplete} isCurrent={isCurrent} />
+                    )}
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-1.5 min-h-[44px]" title={step.label}>
+                    {circle}
+                    {isCurrent && (
+                      <StepLabel label={step.label} isComplete={isComplete} isCurrent={isCurrent} />
+                    )}
+                  </div>
+                )}
+                {index < steps.length - 1 && (
+                  <div
+                    className={`
+                      w-4 lg:w-8 h-0.5 mx-0.5
+                      ${isComplete ? 'bg-primary-500' : 'bg-surface-200'}
+                    `}
+                    aria-hidden="true"
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ol>
+        {trailing && (
+          <div className="flex-shrink-0 ml-2">
+            {trailing}
+          </div>
         )}
       </div>
-      <ol className="hidden sm:flex items-center gap-2" role="list">
-        {steps.map((step, index) => {
-          const isComplete = currentIndex > index;
-          const isCurrent = currentIndex === index;
-
-          return (
-            <li
-              key={step.path}
-              className="flex items-center gap-2 flex-1 last:flex-none"
-            >
-              {isComplete ? (
-                <Link
-                  href={step.path}
-                  className="flex items-center gap-2 min-h-[44px] hover:opacity-80 transition-opacity"
-                >
-                  <StepCircle isComplete={isComplete} isCurrent={isCurrent} index={index} />
-                  <StepLabel label={step.label} isComplete={isComplete} isCurrent={isCurrent} />
-                </Link>
-              ) : (
-                <div className="flex items-center gap-2 min-h-[44px]">
-                  <StepCircle isComplete={isComplete} isCurrent={isCurrent} index={index} />
-                  <StepLabel label={step.label} isComplete={isComplete} isCurrent={isCurrent} />
-                </div>
-              )}
-              {index < steps.length - 1 && (
-                <div
-                  className={`
-                    flex-1 h-0.5 mx-2
-                    ${isComplete ? 'bg-primary-500' : 'bg-surface-200'}
-                  `}
-                  aria-hidden="true"
-                />
-              )}
-            </li>
-          );
-        })}
-      </ol>
     </nav>
   );
 }

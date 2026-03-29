@@ -23,16 +23,17 @@ function WizardHeader() {
   return (
     <>
       <header className="border-b border-surface-200 bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center justify-end max-w-3xl mx-auto px-4 pt-2">
-          <button
-            type="button"
-            onClick={() => setShowImport(true)}
-            className="text-sm px-3 py-1.5 rounded-lg border border-surface-300 text-primary-700 hover:bg-surface-50 transition-colors"
-          >
-            Import
-          </button>
-        </div>
-        <Stepper />
+        <Stepper
+          trailing={
+            <button
+              type="button"
+              onClick={() => setShowImport(true)}
+              className="text-xs px-2.5 py-1 rounded border border-surface-300 text-primary-600 hover:bg-surface-50 transition-colors whitespace-nowrap"
+            >
+              Import
+            </button>
+          }
+        />
       </header>
       <ImportDialog
         open={showImport}
