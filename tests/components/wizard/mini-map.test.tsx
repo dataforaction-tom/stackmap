@@ -136,4 +136,53 @@ describe('MiniMap', () => {
     const rect = svg.querySelector('rect[data-function-id="f1"]');
     expect(rect).toHaveAttribute('fill', '#34d399');
   });
+
+  it('renders shared systems in a separate section when system has multiple functionIds', () => {
+    setArchitecture({
+      ...blank,
+      functions: [
+        { id: 'f1', name: 'Finance', type: 'finance', isActive: true },
+        { id: 'f2', name: 'People', type: 'people', isActive: true },
+      ],
+      systems: [
+        { id: 's1', name: 'SharedSys', type: 'crm', hosting: 'cloud', status: 'active', functionIds: ['f1', 'f2'], serviceIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+
+    // Should use data-shared-system-id, not data-system-id
+    const sharedGroup = svg.querySelector('g[data-shared-system-id="s1"]');
+    expect(sharedGroup).toBeInTheDocument();
+    expect(svg.querySelector('circle[data-system-id="s1"]')).not.toBeInTheDocument();
+
+    // Should have function-colour dots (one per function)
+    const sharedDots = svg.querySelectorAll('circle[data-function-dot]');
+    expect(sharedDots.length).toBe(2);
+
+    // Should have a "Shared" label
+    expect(screen.getByText('Shared')).toBeInTheDocument();
+  });
+
+  it('renders single-function systems under their parent function', () => {
+    setArchitecture({
+      ...blank,
+      functions: [
+        { id: 'f1', name: 'Finance', type: 'finance', isActive: true },
+        { id: 'f2', name: 'People', type: 'people', isActive: true },
+      ],
+      systems: [
+        { id: 's1', name: 'Xero', type: 'finance', hosting: 'cloud', status: 'active', functionIds: ['f1'], serviceIds: [] },
+        { id: 's2', name: 'SharedSys', type: 'crm', hosting: 'cloud', status: 'active', functionIds: ['f1', 'f2'], serviceIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+
+    // Single-function system uses data-system-id
+    expect(svg.querySelector('circle[data-system-id="s1"]')).toBeInTheDocument();
+    // Shared system uses data-shared-system-id
+    expect(svg.querySelector('g[data-shared-system-id="s2"]')).toBeInTheDocument();
+    expect(svg.querySelector('circle[data-system-id="s2"]')).not.toBeInTheDocument();
+  });
 });
