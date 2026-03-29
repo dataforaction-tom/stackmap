@@ -1,7 +1,7 @@
 'use client';
 
 import { useArchitecture } from '@/hooks/useArchitecture';
-import type { Architecture, OrgFunction, System, Integration } from '@/lib/types';
+import type { Architecture, OrgFunction, System, Integration, DataCategory } from '@/lib/types';
 
 // ─── Colour mapping (matches function-picker tints) ───
 
@@ -173,8 +173,14 @@ export function MiniMap() {
   const { architecture } = useArchitecture();
   if (!architecture) return null;
 
-  const { functions, systems, integrations } = architecture;
+  const { functions, systems, integrations, dataCategories } = architecture;
   const hasEntities = functions.length > 0 || systems.length > 0;
+
+  const personalDataSystemIds = new Set(
+    dataCategories
+      .filter((dc) => dc.containsPersonalData)
+      .flatMap((dc) => dc.systemIds),
+  );
 
   const { positions: systemPositions, sharedSystemIds, sharedRowY } = computeSystemPositions(functions, systems);
   const viewBox = hasEntities ? computeViewBox(functions, systemPositions, sharedRowY, sharedSystemIds.size > 0) : '0 0 420 180';
@@ -317,6 +323,14 @@ export function MiniMap() {
             >
               {sys.name.length > 12 ? `${sys.name.slice(0, 11)}…` : sys.name}
             </text>
+            {personalDataSystemIds.has(sys.id) && (
+              <g data-personal-data aria-label="Contains personal data">
+                <circle cx={pos.x + SYS_RADIUS - 2} cy={pos.y - SYS_RADIUS + 2} r={5} fill="#fbbf24" stroke="#b45309" strokeWidth={1} />
+                <text x={pos.x + SYS_RADIUS - 2} y={pos.y - SYS_RADIUS + 5} fontSize="7" textAnchor="middle" fill="#78350f">
+                  P
+                </text>
+              </g>
+            )}
           </g>
         );
       })}
@@ -375,6 +389,14 @@ export function MiniMap() {
             >
               {sys.name.length > 12 ? `${sys.name.slice(0, 11)}…` : sys.name}
             </text>
+            {personalDataSystemIds.has(sys.id) && (
+              <g data-personal-data aria-label="Contains personal data">
+                <circle cx={pos.x + SYS_RADIUS - 2} cy={pos.y - SYS_RADIUS + 2} r={5} fill="#fbbf24" stroke="#b45309" strokeWidth={1} />
+                <text x={pos.x + SYS_RADIUS - 2} y={pos.y - SYS_RADIUS + 5} fontSize="7" textAnchor="middle" fill="#78350f">
+                  P
+                </text>
+              </g>
+            )}
           </g>
         );
       })}

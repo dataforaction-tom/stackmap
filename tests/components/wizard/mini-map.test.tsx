@@ -267,4 +267,58 @@ describe('MiniMap', () => {
     expect(svg.querySelector('g[data-shared-system-id="s2"]')).toBeInTheDocument();
     expect(svg.querySelector('circle[data-system-id="s2"]')).not.toBeInTheDocument();
   });
+
+  it('renders personal data indicator on systems holding personal data', () => {
+    setArchitecture({
+      ...blank,
+      functions: [{ id: 'f1', name: 'Finance', type: 'finance', isActive: true }],
+      systems: [
+        { id: 's1', name: 'HRIS', type: 'hr', hosting: 'cloud', status: 'active', functionIds: ['f1'], serviceIds: [] },
+      ],
+      dataCategories: [
+        { id: 'dc1', name: 'Staff Records', sensitivity: 'confidential', containsPersonalData: true, systemIds: ['s1'] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    const shield = svg.querySelector('[data-personal-data]');
+    expect(shield).toBeTruthy();
+    expect(shield).toHaveAttribute('aria-label', 'Contains personal data');
+  });
+
+  it('does not render personal data indicator on systems without personal data', () => {
+    setArchitecture({
+      ...blank,
+      functions: [{ id: 'f1', name: 'Finance', type: 'finance', isActive: true }],
+      systems: [
+        { id: 's1', name: 'Website', type: 'web', hosting: 'cloud', status: 'active', functionIds: ['f1'], serviceIds: [] },
+      ],
+      dataCategories: [
+        { id: 'dc1', name: 'Public Content', sensitivity: 'public', containsPersonalData: false, systemIds: ['s1'] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    expect(svg.querySelector('[data-personal-data]')).not.toBeInTheDocument();
+  });
+
+  it('renders personal data indicator on shared systems holding personal data', () => {
+    setArchitecture({
+      ...blank,
+      functions: [
+        { id: 'f1', name: 'Finance', type: 'finance', isActive: true },
+        { id: 'f2', name: 'People', type: 'people', isActive: true },
+      ],
+      systems: [
+        { id: 's1', name: 'SharedCRM', type: 'crm', hosting: 'cloud', status: 'active', functionIds: ['f1', 'f2'], serviceIds: [] },
+      ],
+      dataCategories: [
+        { id: 'dc1', name: 'Donor Data', sensitivity: 'confidential', containsPersonalData: true, systemIds: ['s1'] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    const shield = svg.querySelector('[data-personal-data]');
+    expect(shield).toBeTruthy();
+  });
 });
