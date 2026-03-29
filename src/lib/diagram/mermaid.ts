@@ -144,6 +144,17 @@ export function generateMermaidDiagram(arch: Architecture): string {
     }
   }
 
+  // Status styling
+  lines.push('  classDef planned stroke-dasharray:5 5,opacity:0.7');
+  lines.push('  classDef retiring stroke-dasharray:5 5,fill:#e5e7eb,opacity:0.5');
+  lines.push('  classDef legacy fill:#d1d5db,opacity:0.6');
+
+  for (const sys of arch.systems) {
+    if (sys.status !== 'active') {
+      lines.push(`  class ${sys.id} ${sys.status}`);
+    }
+  }
+
   return lines.join('\n');
 }
 
@@ -165,6 +176,17 @@ export function generateSystemDiagram(arch: Architecture): string {
       lines.push(`  ${intg.sourceSystemId} <-->|${label}| ${intg.targetSystemId}`);
     } else {
       lines.push(`  ${intg.sourceSystemId} -->|${label}| ${intg.targetSystemId}`);
+    }
+  }
+
+  // Status styling
+  lines.push('  classDef planned stroke-dasharray:5 5,opacity:0.7');
+  lines.push('  classDef retiring stroke-dasharray:5 5,fill:#e5e7eb,opacity:0.5');
+  lines.push('  classDef legacy fill:#d1d5db,opacity:0.6');
+
+  for (const sys of arch.systems) {
+    if (sys.status !== 'active') {
+      lines.push(`  class ${sys.id} ${sys.status}`);
     }
   }
 
@@ -197,6 +219,17 @@ export function generateFunctionDiagram(arch: Architecture): string {
   for (const sys of orphans) {
     const sysLabel = sanitiseLabel(sys.name);
     lines.push(`  ${sys.id}[${sysLabel}]`);
+  }
+
+  // Status styling
+  lines.push('  classDef planned stroke-dasharray:5 5,opacity:0.7');
+  lines.push('  classDef retiring stroke-dasharray:5 5,fill:#e5e7eb,opacity:0.5');
+  lines.push('  classDef legacy fill:#d1d5db,opacity:0.6');
+
+  for (const sys of arch.systems) {
+    if (sys.status !== 'active') {
+      lines.push(`  class ${sys.id} ${sys.status}`);
+    }
   }
 
   return lines.join('\n');
