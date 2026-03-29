@@ -1,7 +1,7 @@
 'use client';
 
 import { useArchitecture } from '@/hooks/useArchitecture';
-import type { Architecture, OrgFunction, System, Integration, DataCategory } from '@/lib/types';
+import type { Architecture, OrgFunction, System, Service, Integration, DataCategory } from '@/lib/types';
 
 // ─── Colour mapping (matches function-picker tints) ───
 
@@ -24,6 +24,11 @@ const FUNC_HEIGHT = 40;
 const FUNC_GAP = 12;
 const FUNC_Y = 20;
 const FUNC_RX = 8;
+
+const SVC_TAG_W = 60;
+const SVC_TAG_H = 16;
+const SVC_TAG_GAP = 4;
+const SVC_TAG_RX = 8;
 
 const SYS_RADIUS = 14;
 const SYS_GAP_X = 40;
@@ -50,6 +55,42 @@ function computeFuncY(index: number): number {
   return FUNC_Y + row * (FUNC_HEIGHT + FUNC_GAP);
 }
 
+interface ServiceTagPosition {
+  x: number;
+  y: number;
+  service: Service;
+}
+
+function computeServiceTagPositions(
+  functions: OrgFunction[],
+  services: Service[],
+): { positions: ServiceTagPosition[]; serviceRowHeight: number } {
+  const positions: ServiceTagPosition[] = [];
+  let hasAnyServices = false;
+
+  functions.forEach((fn, fnIndex) => {
+    const fnServices = services.filter((s) => s.functionIds.includes(fn.id));
+    if (fnServices.length === 0) return;
+    hasAnyServices = true;
+
+    const fnX = computeFuncX(fnIndex);
+    const fnY = computeFuncY(fnIndex);
+    const tagY = fnY + FUNC_HEIGHT + SVC_TAG_GAP;
+
+    fnServices.forEach((svc, svcIndex) => {
+      const tagX = fnX + svcIndex * (SVC_TAG_W + SVC_TAG_GAP);
+      positions.push({ x: tagX, y: tagY, service: svc });
+    });
+  });
+
+  const serviceRowHeight = hasAnyServices ? SVC_TAG_H + SVC_TAG_GAP * 2 : 0;
+  return { positions, serviceRowHeight };
+}
+
+function truncateServiceName(name: string): string {
+  return name.length > 15 ? `${name.slice(0, 15)}...` : name;
+}
+
 interface SystemPositionsResult {
   positions: Map<string, NodePosition>;
   sharedSystemIds: Set<string>;
@@ -59,6 +100,7 @@ interface SystemPositionsResult {
 function computeSystemPositions(
   functions: OrgFunction[],
   systems: System[],
+  serviceRowHeight: number,
 ): SystemPositionsResult {
   const positions = new Map<string, NodePosition>();
   const sharedSystemIds = new Set<string>();
@@ -66,7 +108,7 @@ function computeSystemPositions(
   const funcBottomY = functions.length > 0
     ? computeFuncY(functions.length - 1) + FUNC_HEIGHT
     : FUNC_Y + FUNC_HEIGHT;
-  const systemStartY = funcBottomY + 40;
+  const systemStartY = funcBottomY + 40 + serviceRowHeight;
 
   // Separate single-function vs shared (multi-function) systems
   const singleFnSystems = systems.filter((s) => s.functionIds.length === 1);
@@ -173,7 +215,7 @@ export function MiniMap() {
   const { architecture } = useArchitecture();
   if (!architecture) return null;
 
-  const { functions, systems, integrations, dataCategories } = architecture;
+  const { functions, systems, services, integrations, dataCategories } = architecture;
   const hasEntities = functions.length > 0 || systems.length > 0;
 
   const personalDataSystemIds = new Set(
@@ -182,7 +224,8 @@ export function MiniMap() {
       .flatMap((dc) => dc.systemIds),
   );
 
-  const { positions: systemPositions, sharedSystemIds, sharedRowY } = computeSystemPositions(functions, systems);
+  const { positions: serviceTagPositions, serviceRowHeight } = computeServiceTagPositions(functions, services);
+  const { positions: systemPositions, sharedSystemIds, sharedRowY } = computeSystemPositions(functions, systems, serviceRowHeight);
   const viewBox = hasEntities ? computeViewBox(functions, systemPositions, sharedRowY, sharedSystemIds.size > 0) : '0 0 420 180';
 
   const entitySummary = hasEntities
@@ -267,6 +310,33 @@ export function MiniMap() {
           </g>
         );
       })}
+
+      {/* Service tags */}
+      {serviceTagPositions.map(({ x, y, service }) => (
+        <g key={service.id} data-service-id={service.id}>
+          <rect
+            x={x}
+            y={y}
+            width={SVC_TAG_W}
+            height={SVC_TAG_H}
+            rx={SVC_TAG_RX}
+            fill="#fbbf24"
+            stroke="#b45309"
+            strokeWidth="0.5"
+          />
+          <text
+            x={x + SVC_TAG_W / 2}
+            y={y + SVC_TAG_H / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="9"
+            fill="#78350f"
+            className="pointer-events-none"
+          >
+            {truncateServiceName(service.name)}
+          </text>
+        </g>
+      ))}
 
       {/* Connector lines from function to its systems */}
       {functions.map((fn, fnIndex) => {

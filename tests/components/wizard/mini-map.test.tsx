@@ -302,6 +302,47 @@ describe('MiniMap', () => {
     expect(svg.querySelector('[data-personal-data]')).not.toBeInTheDocument();
   });
 
+  it('renders services as amber tags beneath their parent functions', () => {
+    setArchitecture({
+      ...blank,
+      functions: [
+        { id: 'f1', name: 'Service Delivery', type: 'service_delivery', isActive: true },
+      ],
+      services: [
+        { id: 'svc1', name: 'Youth mentoring', status: 'active', functionIds: ['f1'], systemIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const tag = document.querySelector('[data-service-id="svc1"]');
+    expect(tag).toBeTruthy();
+    expect(tag?.textContent).toContain('Youth mentoring');
+  });
+
+  it('does not render service tags when no services exist', () => {
+    setArchitecture({
+      ...blank,
+      services: [],
+    });
+    render(<MiniMap />);
+    const tags = document.querySelectorAll('[data-service-id]');
+    expect(tags.length).toBe(0);
+  });
+
+  it('truncates long service names', () => {
+    setArchitecture({
+      ...blank,
+      functions: [
+        { id: 'f1', name: 'Service Delivery', type: 'service_delivery', isActive: true },
+      ],
+      services: [
+        { id: 'svc1', name: 'A very long service name that should be truncated', status: 'active', functionIds: ['f1'], systemIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const tag = document.querySelector('[data-service-id="svc1"]');
+    expect(tag?.textContent?.length).toBeLessThanOrEqual(18); // 15 chars + "..."
+  });
+
   it('renders personal data indicator on shared systems holding personal data', () => {
     setArchitecture({
       ...blank,
