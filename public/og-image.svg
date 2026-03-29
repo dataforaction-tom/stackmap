@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#faf8f5"/>
+  <rect width="1200" height="8" fill="#2e6d42"/>
+  <text x="80" y="220" font-family="system-ui, sans-serif" font-size="72" font-weight="800" fill="#1c3b27">Stackmap</text>
+  <text x="80" y="310" font-family="system-ui, sans-serif" font-size="32" font-weight="400" fill="#2e6d42">Architecture mapping for</text>
+  <text x="80" y="360" font-family="system-ui, sans-serif" font-size="32" font-weight="400" fill="#2e6d42">social purpose organisations</text>
+  <text x="80" y="440" font-family="system-ui, sans-serif" font-size="22" font-weight="400" fill="#788866">Map your systems, costs, risks, and ownership</text>
+  <text x="80" y="475" font-family="system-ui, sans-serif" font-size="22" font-weight="400" fill="#788866">in about an hour. Free and open source.</text>
+  <rect x="80" y="530" width="180" height="44" rx="8" fill="#2e6d42"/>
+  <text x="170" y="558" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#faf8f5" text-anchor="middle">stackmap.org</text>
+  <!-- Decorative stacked bars -->
+  <rect x="900" y="160" width="60" height="300" rx="8" fill="#2e6d42" opacity="0.15"/>
+  <rect x="980" y="220" width="60" height="240" rx="8" fill="#2e6d42" opacity="0.25"/>
+  <rect x="1060" y="180" width="60" height="280" rx="8" fill="#2e6d42" opacity="0.35"/>
+  <rect x="900" y="280" width="60" height="180" rx="8" fill="#2e6d42" opacity="0.6"/>
+  <rect x="980" y="320" width="60" height="140" rx="8" fill="#ea5f22" opacity="0.5"/>
+  <rect x="1060" y="260" width="60" height="200" rx="8" fill="#2e6d42" opacity="0.8"/>
+</svg>
