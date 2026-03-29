@@ -36,8 +36,11 @@ export function getTip(pathname: string, arch: Architecture): string {
   // Data step
   if (pathname.startsWith('/wizard/functions/data') || pathname.startsWith('/wizard/services/data')) {
     if (dataCategories.length === 0) return 'Flag anything containing personal data \u2014 it helps identify compliance priorities.';
-    const personal = dataCategories.filter((d) => d.containsPersonalData).length;
-    if (personal > 0) return `${personal} data categor${personal === 1 ? 'y' : 'ies'} flagged as containing personal data.`;
+    const personalSystems = new Set(
+      dataCategories.filter((d) => d.containsPersonalData).flatMap((d) => d.systemIds),
+    );
+    if (personalSystems.size > 0)
+      return `${personalSystems.size} system${personalSystems.size === 1 ? '' : 's'} hold${personalSystems.size === 1 ? 's' : ''} personal data \u2014 check their security and compliance.`;
     return `${dataCategories.length} data categor${dataCategories.length === 1 ? 'y' : 'ies'} mapped.`;
   }
 
@@ -59,6 +62,9 @@ export function getTip(pathname: string, arch: Architecture): string {
 
   // Review step
   if (pathname.startsWith('/wizard/functions/review') || pathname.startsWith('/wizard/services/review')) {
+    const retiring = systems.filter((s) => s.status === 'retiring').length;
+    if (retiring > 0)
+      return `${retiring} retiring system${retiring === 1 ? '' : 's'} \u2014 have you planned replacements?`;
     const parts = [];
     if (functions.length > 0) parts.push(`${functions.length} function${functions.length === 1 ? '' : 's'}`);
     if (systems.length > 0) parts.push(`${systems.length} system${systems.length === 1 ? '' : 's'}`);
