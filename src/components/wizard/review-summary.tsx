@@ -21,6 +21,17 @@ const FUNCTION_COLORS: Record<string, string> = {
   custom: 'border-l-accent-500',
 };
 
+const SENSITIVITY_COLORS: Record<string, string> = {
+  public: 'text-green-700 bg-green-100',
+  internal: 'text-blue-700 bg-blue-100',
+  confidential: 'text-orange-700 bg-orange-100',
+  restricted: 'text-red-700 bg-red-100',
+};
+
+function sensitivityColor(level: string): string {
+  return `inline-block px-2 py-0.5 rounded text-xs font-medium ${SENSITIVITY_COLORS[level] ?? ''}`;
+}
+
 const RISK_COLORS: Record<string, string> = {
   low: 'text-green-700 bg-green-100',
   moderate: 'text-amber-700 bg-amber-100',
@@ -332,38 +343,36 @@ export function ReviewSummary() {
 
       {/* Data categories */}
       {dataCategories.length > 0 && (
-        <section className="bg-surface-100 border border-surface-300 rounded-lg p-4 sm:p-6 space-y-2">
-          <h2 className="font-display font-semibold text-primary-900 text-lg">
-            Data categories ({dataCategories.length})
-          </h2>
-          <ul className="space-y-1.5" role="list">
-            {dataCategories.map((dc) => {
-              const dcSystems = (dc.systemIds ?? [])
-                .map((sId) => systems.find((s) => s.id === sId))
-                .filter(Boolean);
-              return (
-              <li key={dc.id} className="text-primary-700">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0" aria-hidden="true" />
-                  {dc.name}
-                  <span className="text-xs bg-surface-200 text-primary-500 rounded px-1.5 py-0.5">
-                    {dc.sensitivity}
-                  </span>
-                  {dc.containsPersonalData && (
-                    <span className="text-xs bg-accent-100 text-accent-800 rounded px-1.5 py-0.5 font-medium">
-                      Personal data
-                    </span>
-                  )}
-                </div>
-                {dcSystems.length > 0 && (
-                  <p className="ml-4 mt-0.5 text-xs text-primary-500">
-                    Held in: {dcSystems.map((s) => s!.name).join(', ')}
-                  </p>
-                )}
-              </li>
-              );
-            })}
-          </ul>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-primary-900">Data</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-primary-600 border-b border-surface-200">
+                  <th className="py-2 pr-4">Category</th>
+                  <th className="py-2 pr-4">Sensitivity</th>
+                  <th className="py-2 pr-4">Personal data</th>
+                  <th className="py-2">Systems</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dataCategories.map((dc) => (
+                  <tr key={dc.id} className="border-b border-surface-100">
+                    <td className="py-2 pr-4 font-medium text-primary-900">{dc.name}</td>
+                    <td className="py-2 pr-4">
+                      <span className={sensitivityColor(dc.sensitivity)}>
+                        {dc.sensitivity}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-4">{dc.containsPersonalData ? 'Yes' : 'No'}</td>
+                    <td className="py-2 text-primary-600">
+                      {dc.systemIds.map((id) => systems.find((s) => s.id === id)?.name).filter(Boolean).join(', ') || 'None'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 
