@@ -4,12 +4,11 @@ import { axe } from 'jest-axe';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import PathSelectorPage from '@/app/wizard/page';
 
-// Mock next/link to render a plain anchor
-vi.mock('next/link', () => ({
-  __esModule: true,
-  default: ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
-    <a href={href} {...props}>{children}</a>
-  ),
+const pushMock = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: pushMock }),
 }));
 
 const clearMock = vi.fn().mockResolvedValue(undefined);
@@ -26,8 +25,13 @@ const emptyArch = {
   metadata: { version: '1', exportedAt: '', stackmapVersion: '0.1.0', mappingPath: 'function_first', techFreedomEnabled: false },
 };
 
-const populatedArch = {
+const namedArch = {
   ...emptyArch,
+  organisation: { ...emptyArch.organisation, name: 'Test Org' },
+};
+
+const populatedArch = {
+  ...namedArch,
   functions: [
     { id: 'f1', name: 'Finance', type: 'finance', isActive: true },
     { id: 'f2', name: 'People', type: 'people', isActive: true },
@@ -37,11 +41,7 @@ const populatedArch = {
   ],
 };
 
-let mockArchitecture = emptyArch;
-
-vi.mock('next/navigation', () => ({
-  useSearchParams: () => new URLSearchParams(),
-}));
+let mockArchitecture = emptyArch as typeof emptyArch | typeof populatedArch;
 
 vi.mock('@/components/import/import-dialog', () => ({
   ImportDialog: () => null,
@@ -52,6 +52,7 @@ vi.mock('@/hooks/useArchitecture', () => ({
     architecture: mockArchitecture,
     isLoading: false,
     clear: clearMock,
+    updateOrganisation: vi.fn(),
     replaceArchitecture: replaceArchitectureMock,
   }),
 }));
@@ -91,16 +92,11 @@ describe('PathSelectorPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('links function-first card to /wizard/functions', () => {
+  it('renders path cards as buttons', () => {
+    mockArchitecture = namedArch;
     render(<PathSelectorPage />);
-    const functionLink = screen.getByText('Start with what we do').closest('a');
-    expect(functionLink).toHaveAttribute('href', '/wizard/functions');
-  });
-
-  it('links service-first card to /wizard/services', () => {
-    render(<PathSelectorPage />);
-    const serviceLink = screen.getByText('Start with what we deliver').closest('a');
-    expect(serviceLink).toHaveAttribute('href', '/wizard/services');
+    expect(screen.getByRole('button', { name: /start with what we do/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /start with what we deliver/i })).toBeInTheDocument();
   });
 
   it('renders a list of mapping options', () => {
@@ -109,6 +105,44 @@ describe('PathSelectorPage', () => {
     expect(list).toBeInTheDocument();
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(2);
+  });
+
+  it('navigates to /wizard/techfreedom when function-first path is selected', async () => {
+    mockArchitecture = namedArch;
+    render(<PathSelectorPage />);
+    const user = userEvent.setup();
+    const btn = screen.getByRole('button', { name: /start with what we do/i });
+    await user.click(btn);
+    expect(pushMock).toHaveBeenCalledWith('/wizard/techfreedom');
+  });
+
+  it('sets mappingPath to function_first when that path is selected', async () => {
+    mockArchitecture = namedArch;
+    render(<PathSelectorPage />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /start with what we do/i }));
+    expect(replaceArchitectureMock).toHaveBeenCalled();
+    const newArch = replaceArchitectureMock.mock.calls[0][0];
+    expect(newArch.metadata.mappingPath).toBe('function_first');
+  });
+
+  it('navigates to /wizard/techfreedom when service-first path is selected', async () => {
+    mockArchitecture = namedArch;
+    render(<PathSelectorPage />);
+    const user = userEvent.setup();
+    const btn = screen.getByRole('button', { name: /start with what we deliver/i });
+    await user.click(btn);
+    expect(pushMock).toHaveBeenCalledWith('/wizard/techfreedom');
+  });
+
+  it('sets mappingPath to service_first when that path is selected', async () => {
+    mockArchitecture = namedArch;
+    render(<PathSelectorPage />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /start with what we deliver/i }));
+    expect(replaceArchitectureMock).toHaveBeenCalled();
+    const newArch = replaceArchitectureMock.mock.calls[0][0];
+    expect(newArch.metadata.mappingPath).toBe('service_first');
   });
 
   it('does not show existing data banner when architecture is empty', () => {

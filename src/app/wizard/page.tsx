@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useArchitecture } from '@/hooks/useArchitecture';
 import { ImportDialog } from '@/components/import/import-dialog';
 import { Input } from '@/components/ui/input';
@@ -30,6 +29,7 @@ export default function PathSelectorPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const router = useRouter();
 
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -77,6 +77,16 @@ export default function PathSelectorPage() {
     },
     [updateOrganisation],
   );
+
+  const handlePathSelect = useCallback((path: 'function_first' | 'service_first') => {
+    if (architecture) {
+      replaceArchitecture({
+        ...architecture,
+        metadata: { ...architecture.metadata, mappingPath: path },
+      });
+    }
+    router.push('/wizard/techfreedom');
+  }, [architecture, replaceArchitecture, router]);
 
   return (
     <div className="space-y-10">
@@ -198,12 +208,13 @@ export default function PathSelectorPage() {
       >
         {/* Recommended path */}
         <li>
-          <Link
-            href="/wizard/functions"
+          <button
+            type="button"
+            onClick={() => handlePathSelect('function_first')}
             aria-disabled={!orgHasName}
             tabIndex={orgHasName ? undefined : -1}
             className={`
-              group block rounded-xl border-2 border-primary-300 bg-primary-50 p-6 sm:p-8
+              group block w-full rounded-xl border-2 border-primary-300 bg-primary-50 p-6 sm:p-8
               text-left
               hover:border-primary-500 hover:bg-primary-100
               focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
@@ -239,17 +250,18 @@ export default function PathSelectorPage() {
                 </span>
               </div>
             </div>
-          </Link>
+          </button>
         </li>
 
         {/* Alternative path */}
         <li>
-          <Link
-            href="/wizard/services"
+          <button
+            type="button"
+            onClick={() => handlePathSelect('service_first')}
             aria-disabled={!orgHasName}
             tabIndex={orgHasName ? undefined : -1}
             className={`
-              group block rounded-xl border-2 border-surface-300 bg-surface-100 p-6 sm:p-8
+              group block w-full rounded-xl border-2 border-surface-300 bg-surface-100 p-6 sm:p-8
               text-left
               hover:border-primary-300 hover:bg-surface-50
               focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
@@ -279,7 +291,7 @@ export default function PathSelectorPage() {
                 </span>
               </div>
             </div>
-          </Link>
+          </button>
         </li>
       </ul>
 

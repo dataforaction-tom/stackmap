@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react';
 import { ArchitectureProvider, useArchitecture } from '@/hooks/useArchitecture';
 import { Stepper } from '@/components/wizard/stepper';
-import { TechFreedomToggle } from '@/components/techfreedom/toggle';
 import { LiveMapSidebar } from '@/components/wizard/live-map-sidebar';
 import { ImportDialog } from '@/components/import/import-dialog';
 import { mergeCsvIntoArchitecture } from '@/lib/import';
@@ -34,9 +33,6 @@ function WizardHeader() {
           </button>
         </div>
         <Stepper />
-        <div className="max-w-3xl mx-auto px-4 pb-3">
-          <TechFreedomToggle />
-        </div>
       </header>
       <ImportDialog
         open={showImport}
