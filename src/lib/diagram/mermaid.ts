@@ -202,6 +202,66 @@ export function generateFunctionDiagram(arch: Architecture): string {
   return lines.join('\n');
 }
 
+// ─── Data flow diagram: systems coloured by sensitivity, edges labelled with data categories ───
+
+export function generateDataFlowDiagram(arch: Architecture): string {
+  const lines: string[] = ['graph TB'];
+
+  // Systems as nodes
+  for (const sys of arch.systems) {
+    lines.push(`  ${sys.id}[${sanitiseLabel(sys.name)}]`);
+  }
+
+  // Style classes for sensitivity
+  lines.push('  classDef public fill:#dcfce7,stroke:#16a34a');
+  lines.push('  classDef internal fill:#dbeafe,stroke:#2563eb');
+  lines.push('  classDef confidential fill:#ffedd5,stroke:#ea580c');
+  lines.push('  classDef restricted fill:#fecaca,stroke:#dc2626');
+
+  // Build map of integration edges to data categories
+  const edgeData = new Map<string, string[]>();
+  for (const dc of arch.dataCategories) {
+    for (const intg of arch.integrations) {
+      if (dc.systemIds.includes(intg.sourceSystemId) && dc.systemIds.includes(intg.targetSystemId)) {
+        const edgeKey = `${intg.sourceSystemId}-${intg.targetSystemId}`;
+        const existing = edgeData.get(edgeKey) ?? [];
+        existing.push(sanitiseLabel(dc.name));
+        edgeData.set(edgeKey, existing);
+      }
+    }
+  }
+
+  // Render edges with data category labels
+  for (const intg of arch.integrations) {
+    const edgeKey = `${intg.sourceSystemId}-${intg.targetSystemId}`;
+    const categories = edgeData.get(edgeKey);
+    const label = categories ? categories.join(', ') : integrationLabel(intg.description, intg.type);
+
+    if (intg.direction === 'two_way') {
+      lines.push(`  ${intg.sourceSystemId} <-->|${label}| ${intg.targetSystemId}`);
+    } else {
+      lines.push(`  ${intg.sourceSystemId} -->|${label}| ${intg.targetSystemId}`);
+    }
+  }
+
+  // Apply sensitivity classes to systems based on highest-sensitivity data they hold
+  const systemSensitivity = new Map<string, string>();
+  const sensitivityOrder = ['public', 'internal', 'confidential', 'restricted'];
+  for (const dc of arch.dataCategories) {
+    for (const sysId of dc.systemIds) {
+      const current = systemSensitivity.get(sysId);
+      if (!current || sensitivityOrder.indexOf(dc.sensitivity) > sensitivityOrder.indexOf(current)) {
+        systemSensitivity.set(sysId, dc.sensitivity);
+      }
+    }
+  }
+  for (const [sysId, sensitivity] of systemSensitivity) {
+    lines.push(`  class ${sysId} ${sensitivity}`);
+  }
+
+  return lines.join('\n');
+}
+
 // ─── Service diagram: services as subgraphs with their systems ───
 
 export function generateServiceDiagram(arch: Architecture): string {
