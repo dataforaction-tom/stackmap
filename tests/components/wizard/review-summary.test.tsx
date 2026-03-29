@@ -29,7 +29,7 @@ const fullArchitecture: Architecture = {
     { id: 'fn-2', name: 'Fundraising', type: 'fundraising', isActive: true },
   ],
   services: [
-    { id: 'svc-1', name: 'Grant management', status: 'active', functionIds: ['fn-2'] },
+    { id: 'svc-1', name: 'Grant management', status: 'active', functionIds: ['fn-2'], systemIds: [] },
   ],
   systems: [
     { id: 'sys-1', name: 'Xero', type: 'finance', hosting: 'cloud', status: 'active', functionIds: ['fn-1'], serviceIds: [] },

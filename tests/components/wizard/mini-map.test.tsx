@@ -292,7 +292,7 @@ describe('MiniMap', () => {
       ...blank,
       functions: [{ id: 'f1', name: 'Finance', type: 'finance', isActive: true }],
       systems: [
-        { id: 's1', name: 'Website', type: 'web', hosting: 'cloud', status: 'active', functionIds: ['f1'], serviceIds: [] },
+        { id: 's1', name: 'Website', type: 'website', hosting: 'cloud', status: 'active', functionIds: ['f1'], serviceIds: [] },
       ],
       dataCategories: [
         { id: 'dc1', name: 'Public Content', sensitivity: 'public', containsPersonalData: false, systemIds: ['s1'] },
