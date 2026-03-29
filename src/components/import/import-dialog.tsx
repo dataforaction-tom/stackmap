@@ -11,8 +11,10 @@ type ImportFormat = 'json' | 'csv';
 
 export interface ImportDialogProps {
   open: boolean;
+  mode?: 'replace' | 'merge';
   onClose: () => void;
   onImport: (arch: Architecture) => void;
+  onMergeCsv?: (rows: CsvSystemRow[]) => void;
 }
 
 interface ErrorState {
@@ -20,9 +22,10 @@ interface ErrorState {
   details?: string[];
 }
 
-export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
-  const [step, setStep] = useState<ImportStep>('format');
-  const [format, setFormat] = useState<ImportFormat>('json');
+export function ImportDialog({ open, mode = 'replace', onClose, onImport, onMergeCsv }: ImportDialogProps) {
+  const isMerge = mode === 'merge';
+  const [step, setStep] = useState<ImportStep>(isMerge ? 'file' : 'format');
+  const [format, setFormat] = useState<ImportFormat>(isMerge ? 'csv' : 'json');
   const [validatedArch, setValidatedArch] = useState<Architecture | null>(null);
   const [csvRows, setCsvRows] = useState<CsvSystemRow[]>([]);
   const [csvWarnings, setCsvWarnings] = useState<string[]>([]);
@@ -34,14 +37,14 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
   // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
-      setStep('format');
-      setFormat('json');
+      setStep(isMerge ? 'file' : 'format');
+      setFormat(isMerge ? 'csv' : 'json');
       setValidatedArch(null);
       setCsvRows([]);
       setCsvWarnings([]);
       setError(null);
     }
-  }, [open]);
+  }, [open, isMerge]);
 
   // Focus first interactive element when dialog opens or step changes
   useEffect(() => {
@@ -205,9 +208,14 @@ export function ImportDialog({ open, onClose, onImport }: ImportDialogProps) {
               rows={csvRows}
               warnings={csvWarnings}
               onChange={setCsvRows}
+              mode={mode}
               onImport={(rows) => {
-                const arch = csvRowsToArchitecture(rows, 'My Organisation', 'charity');
-                onImport(arch);
+                if (isMerge && onMergeCsv) {
+                  onMergeCsv(rows);
+                } else {
+                  const arch = csvRowsToArchitecture(rows, 'My Organisation', 'charity');
+                  onImport(arch);
+                }
               }}
               onCancel={onClose}
               firstRef={firstFocusableRef}
@@ -369,12 +377,13 @@ interface CsvPreviewStepProps {
   rows: CsvSystemRow[];
   warnings: string[];
   onChange: (rows: CsvSystemRow[]) => void;
+  mode: 'replace' | 'merge';
   onImport: (rows: CsvSystemRow[]) => void;
   onCancel: () => void;
   firstRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-function CsvPreviewStep({ rows, warnings, onChange, onImport, onCancel, firstRef }: CsvPreviewStepProps) {
+function CsvPreviewStep({ rows, warnings, onChange, mode, onImport, onCancel, firstRef }: CsvPreviewStepProps) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-primary-700">
@@ -395,7 +404,7 @@ function CsvPreviewStep({ rows, warnings, onChange, onImport, onCancel, firstRef
           onClick={() => onImport(rows)}
           className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
-          Import {rows.length} systems
+          {mode === 'merge' ? 'Add' : 'Import'} {rows.length} {rows.length === 1 ? 'system' : 'systems'}
         </button>
         <button
           type="button"

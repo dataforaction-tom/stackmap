@@ -256,6 +256,56 @@ describe('ImportDialog', () => {
     expect(await screen.findByText(/no name column found/i)).toBeInTheDocument();
   });
 
+  describe('merge mode', () => {
+    it('skips format step and goes straight to CSV file input in merge mode', () => {
+      render(<ImportDialog open mode="merge" onClose={vi.fn()} onImport={vi.fn()} />);
+      // Should NOT show format picker
+      expect(screen.queryByText(/full architecture/i)).not.toBeInTheDocument();
+      // Should show CSV file input directly
+      expect(screen.getByText(/select a .csv file/i)).toBeInTheDocument();
+    });
+
+    it('shows "Add N systems" button text in merge mode', async () => {
+      const csv = `name\nSlack\nZoom`;
+      const file = new File([csv], 'tools.csv', { type: 'text/csv' });
+      const onMergeCsv = vi.fn();
+      render(<ImportDialog open mode="merge" onClose={vi.fn()} onImport={vi.fn()} onMergeCsv={onMergeCsv} />);
+      const user = userEvent.setup();
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      await user.upload(input, file);
+      const addBtn = await screen.findByRole('button', { name: /add 2 systems/i });
+      expect(addBtn).toBeInTheDocument();
+    });
+
+    it('calls onMergeCsv instead of onImport in merge mode', async () => {
+      const csv = `name\nSlack`;
+      const file = new File([csv], 'tools.csv', { type: 'text/csv' });
+      const onMergeCsv = vi.fn();
+      const onImport = vi.fn();
+      render(<ImportDialog open mode="merge" onClose={vi.fn()} onImport={onImport} onMergeCsv={onMergeCsv} />);
+      const user = userEvent.setup();
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      await user.upload(input, file);
+      const addBtn = await screen.findByRole('button', { name: /add 1 system/i });
+      await user.click(addBtn);
+      expect(onMergeCsv).toHaveBeenCalledTimes(1);
+      expect(onImport).not.toHaveBeenCalled();
+    });
+
+    it('resets to file step (not format) when merge dialog is closed and reopened', async () => {
+      const { rerender } = render(
+        <ImportDialog open mode="merge" onClose={vi.fn()} onImport={vi.fn()} />,
+      );
+      // Close dialog
+      rerender(<ImportDialog open={false} mode="merge" onClose={vi.fn()} onImport={vi.fn()} />);
+      // Reopen dialog
+      rerender(<ImportDialog open mode="merge" onClose={vi.fn()} onImport={vi.fn()} />);
+      // Should show CSV file input, not format picker
+      expect(screen.queryByText(/full architecture/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/select a .csv file/i)).toBeInTheDocument();
+    });
+  });
+
   it('resets state when dialog is closed and reopened', async () => {
     const { rerender } = render(
       <ImportDialog open onClose={vi.fn()} onImport={vi.fn()} />,
