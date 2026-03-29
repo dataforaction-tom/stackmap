@@ -10,6 +10,7 @@ interface Step {
 
 const FUNCTION_FIRST_STEPS: Step[] = [
   { label: 'Choose path', path: '/wizard' },
+  { label: 'Risk assessment', path: '/wizard/techfreedom' },
   { label: 'Functions', path: '/wizard/functions' },
   { label: 'Systems', path: '/wizard/functions/systems' },
   { label: 'Services', path: '/wizard/functions/services' },
@@ -21,6 +22,7 @@ const FUNCTION_FIRST_STEPS: Step[] = [
 
 const SERVICE_FIRST_STEPS: Step[] = [
   { label: 'Choose path', path: '/wizard' },
+  { label: 'Risk assessment', path: '/wizard/techfreedom' },
   { label: 'Services', path: '/wizard/services' },
   { label: 'Systems', path: '/wizard/services/systems' },
   { label: 'Functions', path: '/wizard/services/functions' },
