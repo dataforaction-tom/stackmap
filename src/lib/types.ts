@@ -53,6 +53,7 @@ export interface Service {
   id: string;
   name: string;
   description?: string;
+  beneficiaries?: string;
   status: 'active' | 'planned' | 'retiring';
   functionIds: string[];
   systemIds: string[];

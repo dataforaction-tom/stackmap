@@ -9,6 +9,7 @@ import {
   generateSystemDiagram,
   generateFunctionDiagram,
   generateServiceDiagram,
+  generateDataFlowDiagram,
 } from '@/lib/diagram/mermaid';
 import { calculateCostSummary, formatCurrency } from '@/lib/cost-analysis';
 
@@ -18,7 +19,7 @@ const MermaidRenderer = dynamic(
   { ssr: false, loading: () => <DiagramSkeleton /> },
 );
 
-type DiagramMode = 'full' | 'systems' | 'functions' | 'services';
+type DiagramMode = 'full' | 'systems' | 'functions' | 'services' | 'data';
 
 interface DiagramViewProps {
   architecture: Architecture | null;
@@ -38,6 +39,7 @@ const MODE_LABELS: Record<DiagramMode, string> = {
   systems: 'Systems only',
   functions: 'Functions only',
   services: 'Services',
+  data: 'Data flow',
 };
 
 export function DiagramView({ architecture, isLoading }: DiagramViewProps) {
@@ -57,6 +59,8 @@ export function DiagramView({ architecture, isLoading }: DiagramViewProps) {
         return generateFunctionDiagram(architecture);
       case 'services':
         return generateServiceDiagram(architecture);
+      case 'data':
+        return generateDataFlowDiagram(architecture);
       default:
         return generateMermaidDiagram(architecture);
     }

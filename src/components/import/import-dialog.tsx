@@ -1,0 +1,462 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { validateArchitectureJson, parseCsvSystems, csvRowsToArchitecture } from '@/lib/import';
+import { CsvPreviewTable } from './csv-preview-table';
+import type { Architecture } from '@/lib/types';
+import type { CsvSystemRow } from '@/lib/import';
+
+type ImportStep = 'format' | 'file' | 'preview' | 'error';
+type ImportFormat = 'json' | 'csv';
+
+export interface ImportDialogProps {
+  open: boolean;
+  mode?: 'replace' | 'merge';
+  onClose: () => void;
+  onImport: (arch: Architecture) => void;
+  onMergeCsv?: (rows: CsvSystemRow[]) => void;
+}
+
+interface ErrorState {
+  message: string;
+  details?: string[];
+}
+
+export function ImportDialog({ open, mode = 'replace', onClose, onImport, onMergeCsv }: ImportDialogProps) {
+  const isMerge = mode === 'merge';
+  const [step, setStep] = useState<ImportStep>(isMerge ? 'file' : 'format');
+  const [format, setFormat] = useState<ImportFormat>(isMerge ? 'csv' : 'json');
+  const [validatedArch, setValidatedArch] = useState<Architecture | null>(null);
+  const [csvRows, setCsvRows] = useState<CsvSystemRow[]>([]);
+  const [csvWarnings, setCsvWarnings] = useState<string[]>([]);
+  const [error, setError] = useState<ErrorState | null>(null);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const firstFocusableRef = useRef<HTMLButtonElement>(null);
+
+  // Reset state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setStep(isMerge ? 'file' : 'format');
+      setFormat(isMerge ? 'csv' : 'json');
+      setValidatedArch(null);
+      setCsvRows([]);
+      setCsvWarnings([]);
+      setError(null);
+    }
+  }, [open, isMerge]);
+
+  // Focus first interactive element when dialog opens or step changes
+  useEffect(() => {
+    if (open && firstFocusableRef.current) {
+      firstFocusableRef.current.focus();
+    }
+  }, [open, step]);
+
+  // Escape key handler
+  useEffect(() => {
+    if (!open) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
+  // Focus trap
+  useEffect(() => {
+    if (!open || !dialogRef.current) return;
+
+    function handleTab(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleTab);
+    return () => document.removeEventListener('keydown', handleTab);
+  }, [open, step]);
+
+  const handleFormatSelect = useCallback((fmt: ImportFormat) => {
+    setFormat(fmt);
+    setStep('file');
+  }, []);
+
+  const handleFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const text = await file.text();
+
+      if (format === 'json') {
+        const result = validateArchitectureJson(text);
+        if (result.success) {
+          setValidatedArch(result.data);
+          setStep('preview');
+        } else {
+          setError({
+            message: result.error,
+            details: result.errors,
+          });
+          setStep('error');
+        }
+      } else {
+        const result = parseCsvSystems(text);
+        if (result.success) {
+          setCsvRows(result.rows);
+          setCsvWarnings(result.warnings);
+          setStep('preview');
+        } else {
+          setError({ message: result.error });
+          setStep('error');
+        }
+      }
+    },
+    [format],
+  );
+
+  const handleBack = useCallback(() => {
+    if (step === 'file' || step === 'error') {
+      if (step === 'error') {
+        setStep('file');
+        setError(null);
+      } else {
+        setStep('format');
+      }
+    }
+  }, [step]);
+
+  const handleImportJson = useCallback(() => {
+    if (validatedArch) {
+      onImport(validatedArch);
+    }
+  }, [validatedArch, onImport]);
+
+  if (!open) return null;
+
+  const dialogTitle = 'Import data';
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 bg-black/50"
+        aria-hidden="true"
+        onClick={onClose}
+      />
+
+      {/* Dialog */}
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="import-dialog-title"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div className="w-full max-w-lg rounded-xl border border-surface-300 bg-white p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <h2
+              id="import-dialog-title"
+              className="font-display text-xl font-semibold text-primary-900"
+            >
+              {dialogTitle}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="p-1.5 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-surface-100 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {step === 'format' && (
+            <FormatStep
+              onSelect={handleFormatSelect}
+              firstRef={firstFocusableRef}
+            />
+          )}
+
+          {step === 'file' && (
+            <FileStep
+              format={format}
+              onFileChange={handleFileChange}
+              onBack={handleBack}
+              firstRef={firstFocusableRef}
+            />
+          )}
+
+          {step === 'preview' && format === 'json' && validatedArch && (
+            <JsonPreviewStep
+              arch={validatedArch}
+              onImport={handleImportJson}
+              onCancel={onClose}
+              firstRef={firstFocusableRef}
+            />
+          )}
+
+          {step === 'preview' && format === 'csv' && (
+            <CsvPreviewStep
+              rows={csvRows}
+              warnings={csvWarnings}
+              onChange={setCsvRows}
+              mode={mode}
+              onImport={(rows) => {
+                if (isMerge && onMergeCsv) {
+                  onMergeCsv(rows);
+                } else {
+                  const arch = csvRowsToArchitecture(rows, 'My Organisation', 'charity');
+                  onImport(arch);
+                }
+              }}
+              onCancel={onClose}
+              firstRef={firstFocusableRef}
+            />
+          )}
+
+          {step === 'error' && error && (
+            <ErrorStep
+              error={error}
+              onTryAgain={() => {
+                setError(null);
+                setStep('file');
+              }}
+              firstRef={firstFocusableRef}
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Sub-steps ───
+
+interface FormatStepProps {
+  onSelect: (fmt: ImportFormat) => void;
+  firstRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+function FormatStep({ onSelect, firstRef }: FormatStepProps) {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <button
+        ref={firstRef}
+        type="button"
+        onClick={() => onSelect('json')}
+        className="rounded-lg border border-surface-300 p-4 text-left transition-colors hover:border-primary-400 hover:bg-primary-50 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+      >
+        <span className="block font-display font-semibold text-primary-900">
+          JSON
+        </span>
+        <span className="block text-sm text-primary-700">
+          Full architecture
+        </span>
+        <span className="mt-1 block text-xs text-primary-500">
+          Import a previously exported Stackmap file
+        </span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onSelect('csv')}
+        className="rounded-lg border border-surface-300 p-4 text-left transition-colors hover:border-primary-400 hover:bg-primary-50 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+      >
+        <span className="block font-display font-semibold text-primary-900">
+          CSV
+        </span>
+        <span className="block text-sm text-primary-700">
+          Systems list
+        </span>
+        <span className="mt-1 block text-xs text-primary-500">
+          Import a spreadsheet of tools and systems
+        </span>
+      </button>
+    </div>
+  );
+}
+
+interface FileStepProps {
+  format: ImportFormat;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBack: () => void;
+  firstRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+function FileStep({ format, onFileChange, onBack, firstRef }: FileStepProps) {
+  const accept = format === 'json' ? '.json' : '.csv';
+  const label = `Select a ${accept} file`;
+
+  return (
+    <div className="space-y-4">
+      <label
+        htmlFor="import-file-input"
+        className="block text-sm font-medium text-primary-800"
+      >
+        {label}
+      </label>
+      <input
+        id="import-file-input"
+        type="file"
+        accept={accept}
+        onChange={onFileChange}
+        className="block w-full text-sm text-primary-700 file:mr-4 file:rounded-lg file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-700 hover:file:bg-primary-100"
+      />
+      <div className="flex justify-start">
+        <button
+          ref={firstRef}
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-surface-100 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        >
+          Back
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface JsonPreviewStepProps {
+  arch: Architecture;
+  onImport: () => void;
+  onCancel: () => void;
+  firstRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+function JsonPreviewStep({ arch, onImport, onCancel, firstRef }: JsonPreviewStepProps) {
+  const counts = [
+    { label: 'functions', count: arch.functions.length },
+    { label: 'systems', count: arch.systems.length },
+    { label: 'services', count: arch.services.length },
+    { label: 'integrations', count: arch.integrations.length },
+    { label: 'owners', count: arch.owners.length },
+    { label: 'data categories', count: arch.dataCategories.length },
+  ].filter((c) => c.count > 0);
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-primary-700">This file contains:</p>
+      <ul className="space-y-1 text-sm text-primary-800">
+        {counts.map((c) => (
+          <li key={c.label}>
+            <span className="font-semibold">{c.count}</span>{' '}
+            {c.count === 1 ? c.label.replace(/s$/, '') : c.label}
+          </li>
+        ))}
+      </ul>
+      <div className="flex gap-3">
+        <button
+          ref={firstRef}
+          type="button"
+          onClick={onImport}
+          className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        >
+          Replace current data
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-surface-100 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface CsvPreviewStepProps {
+  rows: CsvSystemRow[];
+  warnings: string[];
+  onChange: (rows: CsvSystemRow[]) => void;
+  mode: 'replace' | 'merge';
+  onImport: (rows: CsvSystemRow[]) => void;
+  onCancel: () => void;
+  firstRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+function CsvPreviewStep({ rows, warnings, onChange, mode, onImport, onCancel, firstRef }: CsvPreviewStepProps) {
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-primary-700">
+        Found <span className="font-semibold">{rows.length}</span> systems in the CSV file.
+      </p>
+      <CsvPreviewTable rows={rows} onChange={onChange} />
+      {warnings.length > 0 && (
+        <ul className="text-sm text-amber-700">
+          {warnings.map((w, i) => (
+            <li key={i}>{w}</li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-3">
+        <button
+          ref={firstRef}
+          type="button"
+          onClick={() => onImport(rows)}
+          className="inline-flex items-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        >
+          {mode === 'merge' ? 'Add' : 'Import'} {rows.length} {rows.length === 1 ? 'system' : 'systems'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-surface-100 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface ErrorStepProps {
+  error: ErrorState;
+  onTryAgain: () => void;
+  firstRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+function ErrorStep({ error, onTryAgain, firstRef }: ErrorStepProps) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+        <p className="text-sm font-medium text-red-800">{error.message}</p>
+        {error.details && error.details.length > 0 && (
+          <ul className="mt-2 list-disc pl-5 text-xs text-red-700">
+            {error.details.map((d, i) => (
+              <li key={i}>{d}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <button
+        ref={firstRef}
+        type="button"
+        onClick={onTryAgain}
+        className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-primary-700 transition-colors hover:bg-surface-100 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}

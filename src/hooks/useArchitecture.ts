@@ -60,6 +60,9 @@ export interface ArchitectureContextValue {
   addOwner: (owner: Omit<Owner, 'id'>) => string;
   removeOwner: (id: string) => void;
 
+  // Bulk replace
+  replaceArchitecture: (arch: Architecture) => void;
+
   // Metadata
   setTechFreedomEnabled: (enabled: boolean) => void;
 
@@ -345,6 +348,12 @@ export function ArchitectureProvider({
     [updateArch],
   );
 
+  // ─── Bulk replace ───
+
+  const replaceArchitecture = useCallback((arch: Architecture) => {
+    setArchitecture(arch);
+  }, []);
+
   // ─── Metadata ───
 
   const setTechFreedomEnabled = useCallback(
@@ -393,6 +402,7 @@ export function ArchitectureProvider({
     removeIntegration,
     addOwner,
     removeOwner,
+    replaceArchitecture,
     setTechFreedomEnabled,
     save,
     clear,

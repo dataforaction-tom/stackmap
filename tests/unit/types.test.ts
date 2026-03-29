@@ -74,6 +74,7 @@ describe('Core Types', () => {
         name: 'Youth Mentoring',
         status: 'active',
         functionIds: ['fn-1', 'fn-2'],
+        systemIds: [],
       };
       expect(svc.functionIds).toHaveLength(2);
     });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useArchitecture } from '@/hooks/useArchitecture';
-import type { Architecture, OrgFunction, System, Integration } from '@/lib/types';
+import type { Architecture, OrgFunction, System, Service, Integration, DataCategory } from '@/lib/types';
 
 // ─── Colour mapping (matches function-picker tints) ───
 
@@ -24,6 +24,11 @@ const FUNC_HEIGHT = 40;
 const FUNC_GAP = 12;
 const FUNC_Y = 20;
 const FUNC_RX = 8;
+
+const SVC_TAG_W = 60;
+const SVC_TAG_H = 16;
+const SVC_TAG_GAP = 4;
+const SVC_TAG_RX = 8;
 
 const SYS_RADIUS = 14;
 const SYS_GAP_X = 40;
@@ -50,20 +55,71 @@ function computeFuncY(index: number): number {
   return FUNC_Y + row * (FUNC_HEIGHT + FUNC_GAP);
 }
 
+interface ServiceTagPosition {
+  x: number;
+  y: number;
+  service: Service;
+}
+
+function computeServiceTagPositions(
+  functions: OrgFunction[],
+  services: Service[],
+): { positions: ServiceTagPosition[]; serviceRowHeight: number } {
+  const positions: ServiceTagPosition[] = [];
+  let hasAnyServices = false;
+
+  functions.forEach((fn, fnIndex) => {
+    const fnServices = services.filter((s) => s.functionIds.includes(fn.id));
+    if (fnServices.length === 0) return;
+    hasAnyServices = true;
+
+    const fnX = computeFuncX(fnIndex);
+    const fnY = computeFuncY(fnIndex);
+    const tagY = fnY + FUNC_HEIGHT + SVC_TAG_GAP;
+
+    fnServices.forEach((svc, svcIndex) => {
+      const tagX = fnX + svcIndex * (SVC_TAG_W + SVC_TAG_GAP);
+      positions.push({ x: tagX, y: tagY, service: svc });
+    });
+  });
+
+  const serviceRowHeight = hasAnyServices ? SVC_TAG_H + SVC_TAG_GAP * 2 : 0;
+  return { positions, serviceRowHeight };
+}
+
+function truncateServiceName(name: string): string {
+  return name.length > 15 ? `${name.slice(0, 15)}...` : name;
+}
+
+interface SystemPositionsResult {
+  positions: Map<string, NodePosition>;
+  sharedSystemIds: Set<string>;
+  sharedRowY: number;
+}
+
 function computeSystemPositions(
   functions: OrgFunction[],
   systems: System[],
-): Map<string, NodePosition> {
+  serviceRowHeight: number,
+): SystemPositionsResult {
   const positions = new Map<string, NodePosition>();
+  const sharedSystemIds = new Set<string>();
 
   const funcBottomY = functions.length > 0
     ? computeFuncY(functions.length - 1) + FUNC_HEIGHT
     : FUNC_Y + FUNC_HEIGHT;
-  const systemStartY = funcBottomY + 40;
+  const systemStartY = funcBottomY + 40 + serviceRowHeight;
 
+  // Separate single-function vs shared (multi-function) systems
+  const singleFnSystems = systems.filter((s) => s.functionIds.length === 1);
+  const sharedSystems = systems.filter((s) => s.functionIds.length > 1);
+
+  sharedSystems.forEach((s) => sharedSystemIds.add(s.id));
+
+  // Place single-function systems under their parent function
   functions.forEach((fn, fnIndex) => {
     const fnCenterX = computeFuncX(fnIndex) + FUNC_WIDTH / 2;
-    const fnSystems = systems.filter((s) => s.functionIds.includes(fn.id));
+    const fnSystems = singleFnSystems.filter((s) => s.functionIds.includes(fn.id));
 
     fnSystems.forEach((sys, sysIndex) => {
       const row = Math.floor(sysIndex / SYS_PER_ROW);
@@ -76,9 +132,9 @@ function computeSystemPositions(
     });
   });
 
-  // Systems not assigned to any function — place at end
-  const unassigned = systems.filter((s) => !positions.has(s.id));
-  const startX = functions.length > 0
+  // Systems not assigned to any function — place at end of single-function row
+  const unassigned = singleFnSystems.filter((s) => !positions.has(s.id));
+  const unassignedStartX = functions.length > 0
     ? computeFuncX(functions.length - 1) + FUNC_WIDTH + FUNC_GAP
     : 16;
 
@@ -86,17 +142,36 @@ function computeSystemPositions(
     const col = i % SYS_PER_ROW;
     const row = Math.floor(i / SYS_PER_ROW);
     positions.set(sys.id, {
-      x: startX + col * SYS_GAP_X,
+      x: unassignedStartX + col * SYS_GAP_X,
       y: systemStartY + row * SYS_ROW_HEIGHT,
     });
   });
 
-  return positions;
+  // Compute the Y for the shared systems row
+  let maxSingleY = systemStartY;
+  positions.forEach((pos) => {
+    maxSingleY = Math.max(maxSingleY, pos.y);
+  });
+  const sharedRowY = sharedSystems.length > 0 ? maxSingleY + SYS_ROW_HEIGHT + 20 : maxSingleY;
+
+  // Place shared systems in the shared row
+  sharedSystems.forEach((sys, i) => {
+    const col = i % (FUNC_COLS * SYS_PER_ROW);
+    const row = Math.floor(i / (FUNC_COLS * SYS_PER_ROW));
+    positions.set(sys.id, {
+      x: 40 + col * SYS_GAP_X,
+      y: sharedRowY + row * SYS_ROW_HEIGHT,
+    });
+  });
+
+  return { positions, sharedSystemIds, sharedRowY };
 }
 
 function computeViewBox(
   functions: OrgFunction[],
   systemPositions: Map<string, NodePosition>,
+  sharedRowY: number,
+  hasShared: boolean,
 ): string {
   let maxX = 420;
   let maxY = 180;
@@ -114,17 +189,44 @@ function computeViewBox(
   return `0 0 ${maxX} ${maxY}`;
 }
 
+// ─── Status styling ───
+
+interface SystemNodeStyleResult {
+  circle: Record<string, string>;
+  group: Record<string, string>;
+}
+
+function systemNodeStyle(status: string): SystemNodeStyleResult {
+  switch (status) {
+    case 'planned':
+      return { circle: { strokeDasharray: '4 2' }, group: { opacity: '0.7' } };
+    case 'retiring':
+      return { circle: { strokeDasharray: '4 2' }, group: { opacity: '0.5' } };
+    case 'legacy':
+      return { circle: { fill: '#d1d5db' }, group: { opacity: '0.6' } };
+    default:
+      return { circle: {}, group: {} };
+  }
+}
+
 // ─── Component ───
 
 export function MiniMap() {
   const { architecture } = useArchitecture();
   if (!architecture) return null;
 
-  const { functions, systems, integrations } = architecture;
+  const { functions, systems, services, integrations, dataCategories } = architecture;
   const hasEntities = functions.length > 0 || systems.length > 0;
 
-  const systemPositions = computeSystemPositions(functions, systems);
-  const viewBox = hasEntities ? computeViewBox(functions, systemPositions) : '0 0 420 180';
+  const personalDataSystemIds = new Set(
+    dataCategories
+      .filter((dc) => dc.containsPersonalData)
+      .flatMap((dc) => dc.systemIds),
+  );
+
+  const { positions: serviceTagPositions, serviceRowHeight } = computeServiceTagPositions(functions, services);
+  const { positions: systemPositions, sharedSystemIds, sharedRowY } = computeSystemPositions(functions, systems, serviceRowHeight);
+  const viewBox = hasEntities ? computeViewBox(functions, systemPositions, sharedRowY, sharedSystemIds.size > 0) : '0 0 420 180';
 
   const entitySummary = hasEntities
     ? `Architecture map with ${functions.length} function${functions.length !== 1 ? 's' : ''} and ${systems.length} system${systems.length !== 1 ? 's' : ''}`
@@ -209,6 +311,33 @@ export function MiniMap() {
         );
       })}
 
+      {/* Service tags */}
+      {serviceTagPositions.map(({ x, y, service }) => (
+        <g key={service.id} data-service-id={service.id}>
+          <rect
+            x={x}
+            y={y}
+            width={SVC_TAG_W}
+            height={SVC_TAG_H}
+            rx={SVC_TAG_RX}
+            fill="#fbbf24"
+            stroke="#b45309"
+            strokeWidth="0.5"
+          />
+          <text
+            x={x + SVC_TAG_W / 2}
+            y={y + SVC_TAG_H / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="9"
+            fill="#78350f"
+            className="pointer-events-none"
+          >
+            {truncateServiceName(service.name)}
+          </text>
+        </g>
+      ))}
+
       {/* Connector lines from function to its systems */}
       {functions.map((fn, fnIndex) => {
         const fnCenterX = computeFuncX(fnIndex) + FUNC_WIDTH / 2;
@@ -232,15 +361,17 @@ export function MiniMap() {
         });
       })}
 
-      {/* System nodes */}
-      {systems.map((sys) => {
+      {/* Single-function system nodes */}
+      {systems.filter((sys) => !sharedSystemIds.has(sys.id)).map((sys) => {
         const pos = systemPositions.get(sys.id);
         if (!pos) return null;
+        const style = systemNodeStyle(sys.status);
 
         return (
           <g
             key={sys.id}
             className="motion-safe:transition-all motion-safe:duration-300"
+            {...style.group}
           >
             <circle
               data-system-id={sys.id}
@@ -250,6 +381,7 @@ export function MiniMap() {
               fill="#f3f4f6"
               stroke="#9ca3af"
               strokeWidth="1"
+              {...style.circle}
             />
             <text
               x={pos.x}
@@ -261,6 +393,80 @@ export function MiniMap() {
             >
               {sys.name.length > 12 ? `${sys.name.slice(0, 11)}…` : sys.name}
             </text>
+            {personalDataSystemIds.has(sys.id) && (
+              <g data-personal-data aria-label="Contains personal data">
+                <circle cx={pos.x + SYS_RADIUS - 2} cy={pos.y - SYS_RADIUS + 2} r={5} fill="#fbbf24" stroke="#b45309" strokeWidth={1} />
+                <text x={pos.x + SYS_RADIUS - 2} y={pos.y - SYS_RADIUS + 5} fontSize="7" textAnchor="middle" fill="#78350f">
+                  P
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Shared systems label */}
+      {sharedSystemIds.size > 0 && (
+        <text x={20} y={sharedRowY - 12} fontSize="11" fontWeight="600" fill="#78716c">
+          Shared
+        </text>
+      )}
+
+      {/* Shared system nodes */}
+      {systems.filter((sys) => sharedSystemIds.has(sys.id)).map((sys) => {
+        const pos = systemPositions.get(sys.id);
+        if (!pos) return null;
+        const style = systemNodeStyle(sys.status);
+
+        return (
+          <g
+            key={sys.id}
+            data-shared-system-id={sys.id}
+            className="motion-safe:transition-all motion-safe:duration-300"
+            {...style.group}
+          >
+            <circle
+              cx={pos.x}
+              cy={pos.y}
+              r={SYS_RADIUS}
+              fill="#f3f4f6"
+              stroke="#9ca3af"
+              strokeWidth="1"
+              {...style.circle}
+            />
+            {/* Function-colour dots */}
+            {sys.functionIds.map((fnId, dotIndex) => {
+              const fn = functions.find((f) => f.id === fnId);
+              const dotColor = fn ? FUNCTION_COLORS[fn.type] ?? FUNCTION_COLORS.custom : '#9ca3af';
+              return (
+                <circle
+                  key={fnId}
+                  data-function-dot={fnId}
+                  cx={pos.x - SYS_RADIUS + dotIndex * 8 + 4}
+                  cy={pos.y - SYS_RADIUS - 6}
+                  r={3}
+                  fill={dotColor}
+                />
+              );
+            })}
+            <text
+              x={pos.x}
+              y={pos.y + SYS_RADIUS + 14}
+              textAnchor="middle"
+              fontSize="10"
+              fill="#6b7280"
+              className="pointer-events-none"
+            >
+              {sys.name.length > 12 ? `${sys.name.slice(0, 11)}…` : sys.name}
+            </text>
+            {personalDataSystemIds.has(sys.id) && (
+              <g data-personal-data aria-label="Contains personal data">
+                <circle cx={pos.x + SYS_RADIUS - 2} cy={pos.y - SYS_RADIUS + 2} r={5} fill="#fbbf24" stroke="#b45309" strokeWidth={1} />
+                <text x={pos.x + SYS_RADIUS - 2} y={pos.y - SYS_RADIUS + 5} fontSize="7" textAnchor="middle" fill="#78350f">
+                  P
+                </text>
+              </g>
+            )}
           </g>
         );
       })}

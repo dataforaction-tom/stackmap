@@ -117,6 +117,7 @@ export const ServiceSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   description: z.string().optional(),
+  beneficiaries: z.string().optional(),
   status: ServiceStatusSchema,
   functionIds: z.array(z.string()),
   systemIds: z.array(z.string()).default([]),

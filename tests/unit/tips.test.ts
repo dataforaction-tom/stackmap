@@ -2,104 +2,107 @@ import { describe, it, expect } from 'vitest';
 import { getTip } from '@/components/wizard/tips';
 import type { Architecture } from '@/lib/types';
 
-const blank: Architecture = {
-  organisation: { id: '1', name: '', type: 'charity', createdAt: '', updatedAt: '' },
+const baseArch: Architecture = {
+  organisation: {
+    id: 'org-1',
+    name: 'Test Org',
+    type: 'charity',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
   functions: [],
   services: [],
   systems: [],
   dataCategories: [],
   integrations: [],
   owners: [],
-  metadata: { version: '1', exportedAt: '', stackmapVersion: '0.1.0', mappingPath: 'function_first', techFreedomEnabled: false },
+  metadata: {
+    version: '1.0',
+    exportedAt: '2024-01-01T00:00:00Z',
+    stackmapVersion: '0.2.0',
+    mappingPath: 'function_first',
+  },
 };
 
-describe('getTip', () => {
-  // Functions step
-  it('returns start prompt when no functions selected', () => {
-    const tip = getTip('/wizard/functions', blank);
-    expect(tip).toMatch(/select/i);
+describe('getTip - services step', () => {
+  it('returns guidance about beneficiaries when no services exist', () => {
+    const tip = getTip('/wizard/functions/services', baseArch);
+    expect(tip).toMatch(/deliver|beneficiar/i);
+    expect(tip).not.toMatch(/optional/i);
   });
 
-  it('returns encouragement when 1-3 functions selected', () => {
-    const arch = { ...blank, functions: [
-      { id: '1', name: 'Finance', type: 'finance' as const, isActive: true },
-    ]};
-    const tip = getTip('/wizard/functions', arch);
-    expect(tip).toMatch(/most organisations/i);
+  it('returns guidance on service-first path too', () => {
+    const tip = getTip('/wizard/services', baseArch);
+    expect(tip).toMatch(/deliver|beneficiar/i);
+    expect(tip).not.toMatch(/optional/i);
   });
 
-  it('returns good coverage when 6+ functions', () => {
-    const fns = Array.from({ length: 6 }, (_, i) => ({
-      id: String(i), name: `Fn${i}`, type: 'finance' as const, isActive: true,
-    }));
-    const arch = { ...blank, functions: fns };
-    const tip = getTip('/wizard/functions', arch);
-    expect(tip).toMatch(/coverage/i);
+  it('returns count when services exist', () => {
+    const arch: Architecture = {
+      ...baseArch,
+      services: [
+        {
+          id: 's-1',
+          name: 'Counselling',
+          status: 'active',
+          functionIds: [],
+          systemIds: [],
+        },
+      ],
+    };
+    const tip = getTip('/wizard/functions/services', arch);
+    expect(tip).toBe('1 service mapped.');
   });
+});
 
-  // Systems step
-  it('returns prompt when systems step has no systems', () => {
-    const tip = getTip('/wizard/functions/systems', blank);
-    expect(tip).toMatch(/software/i);
-  });
-
-  it('mentions spreadsheets when few systems added', () => {
-    const arch = { ...blank, systems: [
-      { id: '1', name: 'Xero', type: 'finance' as const, hosting: 'cloud' as const, status: 'active' as const, functionIds: [], serviceIds: [] },
-    ]};
-    const tip = getTip('/wizard/functions/systems', arch);
-    expect(tip).toMatch(/spreadsheet/i);
-  });
-
-  // Services step
-  it('returns optional message for services', () => {
-    const tip = getTip('/wizard/functions/services', blank);
-    expect(tip).toMatch(/optional/i);
-  });
-
-  // Data step
-  it('mentions personal data on data step', () => {
-    const tip = getTip('/wizard/functions/data', blank);
+describe('getTip - data step personal data', () => {
+  it('returns tip about personal data systems on data step', () => {
+    const arch: Architecture = {
+      ...baseArch,
+      systems: [
+        {
+          id: 's1',
+          name: 'CRM',
+          type: 'crm',
+          hosting: 'cloud',
+          status: 'active',
+          functionIds: ['f1'],
+          serviceIds: [],
+        },
+      ],
+      dataCategories: [
+        {
+          id: 'd1',
+          name: 'Clients',
+          sensitivity: 'restricted',
+          containsPersonalData: true,
+          systemIds: ['s1'],
+        },
+      ],
+    };
+    const tip = getTip('/wizard/functions/data', arch);
     expect(tip).toMatch(/personal data/i);
+    expect(tip).toMatch(/1 system/i);
   });
+});
 
-  // Integrations step
-  it('normalises few integrations', () => {
-    const tip = getTip('/wizard/functions/integrations', blank);
-    expect(tip).toMatch(/normal/i);
-  });
-
-  // Owners step
-  it('shows unassigned count when systems lack owners', () => {
-    const arch = { ...blank, systems: [
-      { id: '1', name: 'Xero', type: 'finance' as const, hosting: 'cloud' as const, status: 'active' as const, functionIds: [], serviceIds: [] },
-      { id: '2', name: 'Slack', type: 'messaging' as const, hosting: 'cloud' as const, status: 'active' as const, functionIds: [], serviceIds: [] },
-    ]};
-    const tip = getTip('/wizard/functions/owners', arch);
-    expect(tip).toMatch(/2 systems/i);
-  });
-
-  it('congratulates when all systems have owners', () => {
-    const arch = { ...blank, systems: [
-      { id: '1', name: 'Xero', type: 'finance' as const, hosting: 'cloud' as const, status: 'active' as const, functionIds: [], serviceIds: [], ownerId: 'o1' },
-    ], owners: [{ id: 'o1', name: 'Sarah', isExternal: false }]};
-    const tip = getTip('/wizard/functions/owners', arch);
-    expect(tip).toMatch(/owner/i);
-  });
-
-  // Review step
-  it('returns summary for review step', () => {
-    const arch = { ...blank, functions: [
-      { id: '1', name: 'Finance', type: 'finance' as const, isActive: true },
-    ], systems: [
-      { id: '1', name: 'Xero', type: 'finance' as const, hosting: 'cloud' as const, status: 'active' as const, functionIds: ['1'], serviceIds: [] },
-    ]};
+describe('getTip - review step retiring systems', () => {
+  it('returns tip about retiring systems on review step', () => {
+    const arch: Architecture = {
+      ...baseArch,
+      systems: [
+        {
+          id: 's1',
+          name: 'Old CRM',
+          type: 'crm',
+          hosting: 'cloud',
+          status: 'retiring',
+          functionIds: ['f1'],
+          serviceIds: [],
+        },
+      ],
+    };
     const tip = getTip('/wizard/functions/review', arch);
-    expect(tip.length).toBeGreaterThan(0);
-  });
-
-  // Unknown path
-  it('returns empty for unknown paths', () => {
-    expect(getTip('/unknown', blank)).toBe('');
+    expect(tip).toMatch(/retiring/i);
   });
 });

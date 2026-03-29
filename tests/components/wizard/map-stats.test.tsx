@@ -43,6 +43,7 @@ const mockContextValue: ArchitectureContextValue = {
   save: vi.fn().mockResolvedValue(undefined),
   clear: vi.fn().mockResolvedValue(undefined),
   getArchitecture: vi.fn().mockReturnValue(null),
+  replaceArchitecture: vi.fn(),
 };
 
 vi.mock('@/hooks/useArchitecture', () => ({
@@ -135,5 +136,30 @@ describe('MapStats', () => {
     render(<MapStats />);
     const container = screen.getByLabelText('Architecture summary');
     expect(container).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('shows shared systems count when systems belong to multiple functions', () => {
+    setArchitecture({
+      ...blank,
+      systems: [
+        { id: '1', name: 'Xero', type: 'finance', hosting: 'cloud', status: 'active', functionIds: ['f1', 'f2'], serviceIds: [] },
+        { id: '2', name: 'Slack', type: 'messaging', hosting: 'cloud', status: 'active', functionIds: ['f1'], serviceIds: [] },
+      ],
+    });
+    render(<MapStats />);
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('shared')).toBeInTheDocument();
+  });
+
+  it('does not show shared count when no systems are shared', () => {
+    setArchitecture({
+      ...blank,
+      systems: [
+        { id: '1', name: 'Xero', type: 'finance', hosting: 'cloud', status: 'active', functionIds: ['f1'], serviceIds: [] },
+        { id: '2', name: 'Slack', type: 'messaging', hosting: 'cloud', status: 'active', functionIds: ['f2'], serviceIds: [] },
+      ],
+    });
+    render(<MapStats />);
+    expect(screen.queryByText('shared')).not.toBeInTheDocument();
   });
 });

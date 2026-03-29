@@ -17,6 +17,7 @@ const STATUS_OPTIONS = [
 interface ServiceDraft {
   name: string;
   description: string;
+  beneficiaries: string;
   status: 'active' | 'planned' | 'retiring';
   functionIds: string[];
   systemIds: string[];
@@ -25,6 +26,7 @@ interface ServiceDraft {
 const EMPTY_DRAFT: ServiceDraft = {
   name: '',
   description: '',
+  beneficiaries: '',
   status: 'active',
   functionIds: [],
   systemIds: [],
@@ -44,6 +46,7 @@ export function ServiceForm() {
     return (architecture?.services ?? []).map((svc) => ({
       name: svc.name,
       description: svc.description ?? '',
+      beneficiaries: svc.beneficiaries ?? '',
       status: svc.status,
       functionIds: svc.functionIds,
       systemIds: svc.systemIds,
@@ -74,7 +77,7 @@ export function ServiceForm() {
 
   const handleAdd = useCallback(() => {
     if (!draft.name.trim()) return;
-    setAdded((prev) => [...prev, { ...draft, name: draft.name.trim(), description: draft.description.trim() }]);
+    setAdded((prev) => [...prev, { ...draft, name: draft.name.trim(), description: draft.description.trim(), beneficiaries: draft.beneficiaries.trim() }]);
     setDraft(EMPTY_DRAFT);
   }, [draft]);
 
@@ -93,6 +96,7 @@ export function ServiceForm() {
       addService({
         name: svc.name,
         description: svc.description || undefined,
+        beneficiaries: svc.beneficiaries || undefined,
         status: svc.status,
         functionIds: svc.functionIds,
         systemIds: svc.systemIds,
@@ -119,12 +123,11 @@ export function ServiceForm() {
       <div className="space-y-8">
         <div className="space-y-3">
           <h1 className="text-3xl sm:text-4xl font-display font-bold text-primary-900">
-            Do you want to map specific services?
+            What does your organisation deliver?
           </h1>
           <p className="text-lg text-primary-700">
-            Services are the specific programmes or activities your organisation delivers, like
-            &ldquo;Youth mentoring&rdquo; or &ldquo;Emergency food parcels&rdquo;. This step is
-            optional &mdash; you can skip it if your systems aren&rsquo;t tied to particular services.
+            Services are the things you do for your beneficiaries or customers &mdash; like
+            &ldquo;Youth mentoring&rdquo; or &ldquo;Emergency food parcels&rdquo;. Not software services.
           </p>
         </div>
 
@@ -134,14 +137,14 @@ export function ServiceForm() {
             onClick={() => setWantsServices(true)}
             className="btn-primary px-6 py-3 rounded-lg font-medium"
           >
-            Yes, add services
+            Yes, add what we deliver
           </button>
           <button
             type="button"
             onClick={handleSkip}
             className="btn-secondary px-6 py-3 rounded-lg font-medium"
           >
-            Skip this step
+            Skip for now
           </button>
         </div>
 
@@ -164,10 +167,10 @@ export function ServiceForm() {
     <div className="space-y-8">
       <div className="space-y-3">
         <h1 className="text-3xl sm:text-4xl font-display font-bold text-primary-900">
-          Add your services
+          What your organisation delivers
         </h1>
         <p className="text-lg text-primary-700">
-          Tell us about the programmes and activities your organisation delivers.
+          Tell us about the programmes and activities you deliver to your beneficiaries or customers.
         </p>
       </div>
 
@@ -188,6 +191,11 @@ export function ServiceForm() {
                   <span className="text-sm text-primary-500 ml-2">
                     {STATUS_OPTIONS.find((s) => s.value === svc.status)?.label.split(' - ')[0]}
                   </span>
+                  {svc.beneficiaries && (
+                    <span className="text-sm text-primary-500 block">
+                      For: {svc.beneficiaries}
+                    </span>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -242,6 +250,17 @@ export function ServiceForm() {
               placeholder="A brief description of what this service does"
             />
           </div>
+
+          <div className="sm:col-span-2">
+            <Input
+              id="service-beneficiaries"
+              label="Who is this for?"
+              helperText="Optional — e.g. young people aged 16-25, local businesses"
+              value={draft.beneficiaries}
+              onChange={(e) => updateField('beneficiaries', e.target.value)}
+              placeholder="e.g. Young people aged 16-25"
+            />
+          </div>
         </div>
 
         {/* Link to functions */}
@@ -294,7 +313,7 @@ export function ServiceForm() {
             onClick={handleSkip}
             className="btn-secondary"
           >
-            Skip this step
+            Skip for now
           </button>
           <button
             type="button"

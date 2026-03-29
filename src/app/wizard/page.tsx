@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import Link from 'next/link';
+import { useState, useCallback, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useArchitecture } from '@/hooks/useArchitecture';
+import { ImportDialog } from '@/components/import/import-dialog';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import type { Organisation } from '@/lib/types';
@@ -24,9 +25,18 @@ const SIZE_LABELS: Record<NonNullable<Organisation['size']>, string> = {
 };
 
 export default function PathSelectorPage() {
-  const { architecture, updateOrganisation, clear, isLoading } = useArchitecture();
+  const { architecture, updateOrganisation, replaceArchitecture, clear, isLoading } = useArchitecture();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('import') === 'true') {
+      setShowImport(true);
+    }
+  }, [searchParams]);
 
   const org = architecture?.organisation;
   const orgHasName = Boolean(org?.name?.trim());
@@ -68,12 +78,31 @@ export default function PathSelectorPage() {
     [updateOrganisation],
   );
 
+  const handlePathSelect = useCallback((path: 'function_first' | 'service_first') => {
+    if (architecture) {
+      replaceArchitecture({
+        ...architecture,
+        metadata: { ...architecture.metadata, mappingPath: path },
+      });
+    }
+    router.push('/wizard/techfreedom');
+  }, [architecture, replaceArchitecture, router]);
+
   return (
     <div className="space-y-10">
       <div className="space-y-3 max-w-xl">
-        <h1 className="text-display-md font-display text-primary-900">
-          How would you like to begin?
-        </h1>
+        <div className="flex items-start justify-between gap-4">
+          <h1 className="text-display-md font-display text-primary-900">
+            How would you like to begin?
+          </h1>
+          <button
+            type="button"
+            onClick={() => setShowImport(true)}
+            className="text-sm px-4 py-2 rounded-lg border border-surface-300 text-primary-700 hover:bg-surface-50 transition-colors flex-shrink-0"
+          >
+            Import
+          </button>
+        </div>
         <p className="text-body-lg text-primary-700">
           There are two ways to approach your technology map. Pick whichever
           feels most natural &mdash; you can always change your mind.
@@ -179,12 +208,13 @@ export default function PathSelectorPage() {
       >
         {/* Recommended path */}
         <li>
-          <Link
-            href="/wizard/functions"
+          <button
+            type="button"
+            onClick={() => handlePathSelect('function_first')}
             aria-disabled={!orgHasName}
             tabIndex={orgHasName ? undefined : -1}
             className={`
-              group block rounded-xl border-2 border-primary-300 bg-primary-50 p-6 sm:p-8
+              group block w-full rounded-xl border-2 border-primary-300 bg-primary-50 p-6 sm:p-8
               text-left
               hover:border-primary-500 hover:bg-primary-100
               focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
@@ -220,17 +250,18 @@ export default function PathSelectorPage() {
                 </span>
               </div>
             </div>
-          </Link>
+          </button>
         </li>
 
         {/* Alternative path */}
         <li>
-          <Link
-            href="/wizard/services"
+          <button
+            type="button"
+            onClick={() => handlePathSelect('service_first')}
             aria-disabled={!orgHasName}
             tabIndex={orgHasName ? undefined : -1}
             className={`
-              group block rounded-xl border-2 border-surface-300 bg-surface-100 p-6 sm:p-8
+              group block w-full rounded-xl border-2 border-surface-300 bg-surface-100 p-6 sm:p-8
               text-left
               hover:border-primary-300 hover:bg-surface-50
               focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
@@ -260,9 +291,18 @@ export default function PathSelectorPage() {
                 </span>
               </div>
             </div>
-          </Link>
+          </button>
         </li>
       </ul>
+
+      <ImportDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImport={(arch) => {
+          replaceArchitecture(arch);
+          setShowImport(false);
+        }}
+      />
     </div>
   );
 }

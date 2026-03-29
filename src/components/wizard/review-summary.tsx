@@ -21,6 +21,17 @@ const FUNCTION_COLORS: Record<string, string> = {
   custom: 'border-l-accent-500',
 };
 
+const SENSITIVITY_COLORS: Record<string, string> = {
+  public: 'text-green-700 bg-green-100',
+  internal: 'text-blue-700 bg-blue-100',
+  confidential: 'text-orange-700 bg-orange-100',
+  restricted: 'text-red-700 bg-red-100',
+};
+
+function sensitivityColor(level: string): string {
+  return `inline-block px-2 py-0.5 rounded text-xs font-medium ${SENSITIVITY_COLORS[level] ?? ''}`;
+}
+
 const RISK_COLORS: Record<string, string> = {
   low: 'text-green-700 bg-green-100',
   moderate: 'text-amber-700 bg-amber-100',
@@ -283,6 +294,24 @@ export function ReviewSummary() {
               </span>
             )}
           </div>
+          <div className="bg-white border border-surface-200 rounded-lg p-4 mt-3 space-y-2">
+            <p className="text-sm text-primary-700 leading-relaxed">
+              Want help improving these scores? The TechFreedom programme offers cohort-based
+              support for organisations looking to reduce technology risk, plus bespoke
+              guidance for more complex stacks.
+            </p>
+            <a
+              href="https://techfreedom.eu/programme/#signup-cta"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:text-accent-800 hover:underline"
+            >
+              Learn about TechFreedom support
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+            </a>
+          </div>
         </section>
       )}
 
@@ -332,38 +361,36 @@ export function ReviewSummary() {
 
       {/* Data categories */}
       {dataCategories.length > 0 && (
-        <section className="bg-surface-100 border border-surface-300 rounded-lg p-4 sm:p-6 space-y-2">
-          <h2 className="font-display font-semibold text-primary-900 text-lg">
-            Data categories ({dataCategories.length})
-          </h2>
-          <ul className="space-y-1.5" role="list">
-            {dataCategories.map((dc) => {
-              const dcSystems = (dc.systemIds ?? [])
-                .map((sId) => systems.find((s) => s.id === sId))
-                .filter(Boolean);
-              return (
-              <li key={dc.id} className="text-primary-700">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary-400 flex-shrink-0" aria-hidden="true" />
-                  {dc.name}
-                  <span className="text-xs bg-surface-200 text-primary-500 rounded px-1.5 py-0.5">
-                    {dc.sensitivity}
-                  </span>
-                  {dc.containsPersonalData && (
-                    <span className="text-xs bg-accent-100 text-accent-800 rounded px-1.5 py-0.5 font-medium">
-                      Personal data
-                    </span>
-                  )}
-                </div>
-                {dcSystems.length > 0 && (
-                  <p className="ml-4 mt-0.5 text-xs text-primary-500">
-                    Held in: {dcSystems.map((s) => s!.name).join(', ')}
-                  </p>
-                )}
-              </li>
-              );
-            })}
-          </ul>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-primary-900">Data</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-primary-600 border-b border-surface-200">
+                  <th className="py-2 pr-4">Category</th>
+                  <th className="py-2 pr-4">Sensitivity</th>
+                  <th className="py-2 pr-4">Personal data</th>
+                  <th className="py-2">Systems</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dataCategories.map((dc) => (
+                  <tr key={dc.id} className="border-b border-surface-100">
+                    <td className="py-2 pr-4 font-medium text-primary-900">{dc.name}</td>
+                    <td className="py-2 pr-4">
+                      <span className={sensitivityColor(dc.sensitivity)}>
+                        {dc.sensitivity}
+                      </span>
+                    </td>
+                    <td className="py-2 pr-4">{dc.containsPersonalData ? 'Yes' : 'No'}</td>
+                    <td className="py-2 text-primary-600">
+                      {dc.systemIds.map((id) => systems.find((s) => s.id === id)?.name).filter(Boolean).join(', ') || 'None'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 

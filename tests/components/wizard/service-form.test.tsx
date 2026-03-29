@@ -56,6 +56,8 @@ const mockContextValue: ArchitectureContextValue = {
   save: vi.fn().mockResolvedValue(undefined),
   clear: vi.fn().mockResolvedValue(undefined),
   getArchitecture: vi.fn().mockReturnValue(null),
+  replaceArchitecture: vi.fn(),
+  setTechFreedomEnabled: vi.fn(),
 };
 
 vi.mock('@/hooks/useArchitecture', () => ({
@@ -76,41 +78,55 @@ describe('ServiceForm', () => {
   it('renders the initial choice question', () => {
     render(<ServiceForm />);
     expect(
-      screen.getByRole('heading', { name: /do you want to map specific services/i }),
+      screen.getByRole('heading', { name: /what does your organisation deliver/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows updated subheading about services for beneficiaries', () => {
+    render(<ServiceForm />);
+    expect(
+      screen.getByText(/services are the things you do for your beneficiaries or customers/i),
     ).toBeInTheDocument();
   });
 
   it('has a skip option', () => {
     render(<ServiceForm />);
-    expect(screen.getByRole('button', { name: /skip this step/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /skip for now/i })).toBeInTheDocument();
   });
 
   it('navigates to data step when skip is clicked', async () => {
     const user = userEvent.setup();
     render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /skip this step/i }));
+    await user.click(screen.getByRole('button', { name: /skip for now/i }));
     expect(pushMock).toHaveBeenCalledWith('/wizard/functions/data');
   });
 
   it('shows the add form when user chooses yes', async () => {
     const user = userEvent.setup();
     render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /yes, add services/i }));
-    expect(screen.getByRole('heading', { name: /add your services/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
+    expect(screen.getByRole('heading', { name: /what your organisation delivers/i })).toBeInTheDocument();
   });
 
   it('has no accessibility violations on the add form', async () => {
     const user = userEvent.setup();
     const { container } = render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /yes, add services/i }));
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  it('renders beneficiaries input field', async () => {
+    const user = userEvent.setup();
+    render(<ServiceForm />);
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
+    expect(screen.getByLabelText(/who is this for/i)).toBeInTheDocument();
   });
 
   it('can add a service and shows it in the list', async () => {
     const user = userEvent.setup();
     render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /yes, add services/i }));
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
 
     await user.type(screen.getByLabelText(/service name/i), 'Youth mentoring');
     await user.click(screen.getByRole('button', { name: /add service/i }));
@@ -118,10 +134,22 @@ describe('ServiceForm', () => {
     expect(screen.getByText('Youth mentoring')).toBeInTheDocument();
   });
 
+  it('shows beneficiaries in service card when present', async () => {
+    const user = userEvent.setup();
+    render(<ServiceForm />);
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
+
+    await user.type(screen.getByLabelText(/service name/i), 'Youth mentoring');
+    await user.type(screen.getByLabelText(/who is this for/i), 'Young people aged 16-25');
+    await user.click(screen.getByRole('button', { name: /add service/i }));
+
+    expect(screen.getByText('For: Young people aged 16-25')).toBeInTheDocument();
+  });
+
   it('disables add button when name is empty', async () => {
     const user = userEvent.setup();
     render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /yes, add services/i }));
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
 
     expect(screen.getByRole('button', { name: /add service/i })).toBeDisabled();
   });
@@ -129,7 +157,7 @@ describe('ServiceForm', () => {
   it('can remove an added service', async () => {
     const user = userEvent.setup();
     render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /yes, add services/i }));
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
 
     await user.type(screen.getByLabelText(/service name/i), 'Food bank');
     await user.click(screen.getByRole('button', { name: /add service/i }));
@@ -142,7 +170,7 @@ describe('ServiceForm', () => {
   it('calls addService for each added service on continue', async () => {
     const user = userEvent.setup();
     render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /yes, add services/i }));
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
 
     await user.type(screen.getByLabelText(/service name/i), 'Counselling');
     await user.click(screen.getByRole('button', { name: /add service/i }));
@@ -154,10 +182,25 @@ describe('ServiceForm', () => {
     expect(pushMock).toHaveBeenCalledWith('/wizard/functions/data');
   });
 
+  it('passes beneficiaries when calling addService on continue', async () => {
+    const user = userEvent.setup();
+    render(<ServiceForm />);
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
+
+    await user.type(screen.getByLabelText(/service name/i), 'Mentoring');
+    await user.type(screen.getByLabelText(/who is this for/i), 'Young people');
+    await user.click(screen.getByRole('button', { name: /add service/i }));
+    await user.click(screen.getByRole('button', { name: /^continue$/i }));
+
+    expect(addServiceMock).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Mentoring', beneficiaries: 'Young people' }),
+    );
+  });
+
   it('shows function checkboxes for linking', async () => {
     const user = userEvent.setup();
     render(<ServiceForm />);
-    await user.click(screen.getByRole('button', { name: /yes, add services/i }));
+    await user.click(screen.getByRole('button', { name: /yes, add what we deliver/i }));
 
     expect(screen.getByText('Finance')).toBeInTheDocument();
     expect(screen.getByText('Fundraising')).toBeInTheDocument();

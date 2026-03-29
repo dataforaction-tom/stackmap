@@ -29,7 +29,7 @@ const fullArchitecture: Architecture = {
     { id: 'fn-2', name: 'Fundraising', type: 'fundraising', isActive: true },
   ],
   services: [
-    { id: 'svc-1', name: 'Grant management', status: 'active', functionIds: ['fn-2'] },
+    { id: 'svc-1', name: 'Grant management', status: 'active', functionIds: ['fn-2'], systemIds: [] },
   ],
   systems: [
     { id: 'sys-1', name: 'Xero', type: 'finance', hosting: 'cloud', status: 'active', functionIds: ['fn-1'], serviceIds: [] },
@@ -69,6 +69,8 @@ const mockContextValue: ArchitectureContextValue = {
   save: saveMock,
   clear: vi.fn().mockResolvedValue(undefined),
   getArchitecture: vi.fn().mockReturnValue(fullArchitecture),
+  replaceArchitecture: vi.fn(),
+  setTechFreedomEnabled: vi.fn(),
 };
 
 vi.mock('@/hooks/useArchitecture', () => ({
@@ -119,8 +121,54 @@ describe('ReviewSummary', () => {
 
   it('shows data categories', () => {
     render(<ReviewSummary />);
-    expect(screen.getByText(/data categories \(1\)/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /^data$/i })).toBeInTheDocument();
     expect(screen.getByText('Financial Transactions')).toBeInTheDocument();
+  });
+
+  it('renders data categories section with sensitivity badges', () => {
+    const archWithData: Architecture = {
+      ...fullArchitecture,
+      dataCategories: [
+        { id: 'd1', name: 'Client records', sensitivity: 'confidential', containsPersonalData: true, systemIds: ['sys-1'] },
+        { id: 'd2', name: 'Public content', sensitivity: 'public', containsPersonalData: false, systemIds: [] },
+      ],
+    };
+
+    const origArch = mockContextValue.architecture;
+    const origGet = mockContextValue.getArchitecture;
+    mockContextValue.architecture = archWithData;
+    mockContextValue.getArchitecture = vi.fn().mockReturnValue(archWithData);
+
+    try {
+      render(<ReviewSummary />);
+      expect(screen.getByRole('heading', { name: /data/i })).toBeInTheDocument();
+      expect(screen.getByText('Client records')).toBeInTheDocument();
+      expect(screen.getByText('confidential')).toBeInTheDocument();
+      expect(screen.getByText('Yes')).toBeInTheDocument();
+    } finally {
+      mockContextValue.architecture = origArch;
+      mockContextValue.getArchitecture = origGet;
+    }
+  });
+
+  it('does not render data section when no data categories exist', () => {
+    const archNoData: Architecture = {
+      ...fullArchitecture,
+      dataCategories: [],
+    };
+
+    const origArch = mockContextValue.architecture;
+    const origGet = mockContextValue.getArchitecture;
+    mockContextValue.architecture = archNoData;
+    mockContextValue.getArchitecture = vi.fn().mockReturnValue(archNoData);
+
+    try {
+      render(<ReviewSummary />);
+      expect(screen.queryByRole('heading', { name: /^data$/i })).not.toBeInTheDocument();
+    } finally {
+      mockContextValue.architecture = origArch;
+      mockContextValue.getArchitecture = origGet;
+    }
   });
 
   it('shows integrations', () => {
@@ -248,6 +296,8 @@ describe('ReviewSummary', () => {
         ...mockContextValue,
         architecture: archWithScores,
         getArchitecture: vi.fn().mockReturnValue(archWithScores),
+        replaceArchitecture: vi.fn(),
+        setTechFreedomEnabled: vi.fn(),
       };
 
       // Temporarily override the mock
