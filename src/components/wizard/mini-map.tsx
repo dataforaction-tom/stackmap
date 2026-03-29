@@ -147,6 +147,26 @@ function computeViewBox(
   return `0 0 ${maxX} ${maxY}`;
 }
 
+// ─── Status styling ───
+
+interface SystemNodeStyleResult {
+  circle: Record<string, string>;
+  group: Record<string, string>;
+}
+
+function systemNodeStyle(status: string): SystemNodeStyleResult {
+  switch (status) {
+    case 'planned':
+      return { circle: { strokeDasharray: '4 2' }, group: { opacity: '0.7' } };
+    case 'retiring':
+      return { circle: { strokeDasharray: '4 2' }, group: { opacity: '0.5' } };
+    case 'legacy':
+      return { circle: { fill: '#d1d5db' }, group: { opacity: '0.6' } };
+    default:
+      return { circle: {}, group: {} };
+  }
+}
+
 // ─── Component ───
 
 export function MiniMap() {
@@ -269,11 +289,13 @@ export function MiniMap() {
       {systems.filter((sys) => !sharedSystemIds.has(sys.id)).map((sys) => {
         const pos = systemPositions.get(sys.id);
         if (!pos) return null;
+        const style = systemNodeStyle(sys.status);
 
         return (
           <g
             key={sys.id}
             className="motion-safe:transition-all motion-safe:duration-300"
+            {...style.group}
           >
             <circle
               data-system-id={sys.id}
@@ -283,6 +305,7 @@ export function MiniMap() {
               fill="#f3f4f6"
               stroke="#9ca3af"
               strokeWidth="1"
+              {...style.circle}
             />
             <text
               x={pos.x}
@@ -309,12 +332,14 @@ export function MiniMap() {
       {systems.filter((sys) => sharedSystemIds.has(sys.id)).map((sys) => {
         const pos = systemPositions.get(sys.id);
         if (!pos) return null;
+        const style = systemNodeStyle(sys.status);
 
         return (
           <g
             key={sys.id}
             data-shared-system-id={sys.id}
             className="motion-safe:transition-all motion-safe:duration-300"
+            {...style.group}
           >
             <circle
               cx={pos.x}
@@ -323,6 +348,7 @@ export function MiniMap() {
               fill="#f3f4f6"
               stroke="#9ca3af"
               strokeWidth="1"
+              {...style.circle}
             />
             {/* Function-colour dots */}
             {sys.functionIds.map((fnId, dotIndex) => {

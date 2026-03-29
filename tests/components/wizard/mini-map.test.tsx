@@ -164,6 +164,88 @@ describe('MiniMap', () => {
     expect(screen.getByText('Shared')).toBeInTheDocument();
   });
 
+  it('renders planned system with dashed stroke', () => {
+    setArchitecture({
+      ...blank,
+      functions: [{ id: 'f1', name: 'Finance', type: 'finance', isActive: true }],
+      systems: [
+        { id: 's1', name: 'NewSys', type: 'finance', hosting: 'cloud', status: 'planned', functionIds: ['f1'], serviceIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    const circle = svg.querySelector('circle[data-system-id="s1"]');
+    expect(circle).toHaveAttribute('stroke-dasharray', '4 2');
+  });
+
+  it('renders legacy system with grey fill', () => {
+    setArchitecture({
+      ...blank,
+      functions: [{ id: 'f1', name: 'Finance', type: 'finance', isActive: true }],
+      systems: [
+        { id: 's1', name: 'OldSys', type: 'finance', hosting: 'cloud', status: 'legacy', functionIds: ['f1'], serviceIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    const circle = svg.querySelector('circle[data-system-id="s1"]');
+    expect(circle).toHaveAttribute('fill', '#d1d5db');
+  });
+
+  it('renders retiring system with reduced opacity', () => {
+    setArchitecture({
+      ...blank,
+      functions: [{ id: 'f1', name: 'Finance', type: 'finance', isActive: true }],
+      systems: [
+        { id: 's1', name: 'RetSys', type: 'finance', hosting: 'cloud', status: 'retiring', functionIds: ['f1'], serviceIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    const circle = svg.querySelector('circle[data-system-id="s1"]');
+    const g = circle?.closest('g');
+    expect(circle).toHaveAttribute('stroke-dasharray', '4 2');
+    expect(g).toHaveAttribute('opacity', '0.5');
+  });
+
+  it('renders planned shared system with dashed stroke', () => {
+    setArchitecture({
+      ...blank,
+      functions: [
+        { id: 'f1', name: 'Finance', type: 'finance', isActive: true },
+        { id: 'f2', name: 'People', type: 'people', isActive: true },
+      ],
+      systems: [
+        { id: 's1', name: 'SharedPlanned', type: 'crm', hosting: 'cloud', status: 'planned', functionIds: ['f1', 'f2'], serviceIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    const sharedGroup = svg.querySelector('g[data-shared-system-id="s1"]');
+    const circle = sharedGroup?.querySelector('circle');
+    expect(circle).toHaveAttribute('stroke-dasharray', '4 2');
+    expect(sharedGroup).toHaveAttribute('opacity', '0.7');
+  });
+
+  it('renders legacy shared system with grey fill', () => {
+    setArchitecture({
+      ...blank,
+      functions: [
+        { id: 'f1', name: 'Finance', type: 'finance', isActive: true },
+        { id: 'f2', name: 'People', type: 'people', isActive: true },
+      ],
+      systems: [
+        { id: 's1', name: 'SharedLegacy', type: 'crm', hosting: 'cloud', status: 'legacy', functionIds: ['f1', 'f2'], serviceIds: [] },
+      ],
+    });
+    render(<MiniMap />);
+    const svg = screen.getByRole('img');
+    const sharedGroup = svg.querySelector('g[data-shared-system-id="s1"]');
+    const circle = sharedGroup?.querySelector('circle');
+    expect(circle).toHaveAttribute('fill', '#d1d5db');
+    expect(sharedGroup).toHaveAttribute('opacity', '0.6');
+  });
+
   it('renders single-function systems under their parent function', () => {
     setArchitecture({
       ...blank,
