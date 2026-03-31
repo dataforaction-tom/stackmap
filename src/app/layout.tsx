@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     'open source',
     'TechFreedom',
   ],
-  authors: [{ name: 'Data for Action' }],
+  authors: [{ name: 'The Good Ship and Tomcw.xyz' }],
   openGraph: {
     type: 'website',
     locale: 'en_GB',
