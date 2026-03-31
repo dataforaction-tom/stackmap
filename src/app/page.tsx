@@ -132,7 +132,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent-500 mt-2.5 flex-shrink-0" aria-hidden="true" />
-                  Plain language throughout &mdash; no TOGAF, no ArchiMate
+                  Plain language throughout 
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent-500 mt-2.5 flex-shrink-0" aria-hidden="true" />
@@ -156,7 +156,7 @@ export default function Home() {
                   </li>
                   <li className="flex items-center gap-3">
                     <span className="w-2 h-2 rounded-full bg-accent-400 flex-shrink-0" aria-hidden="true" />
-                    Councils planning LGR transitions
+                    Small businesses
                   </li>
                   <li className="flex items-center gap-3">
                     <span className="w-2 h-2 rounded-full bg-accent-400 flex-shrink-0" aria-hidden="true" />
