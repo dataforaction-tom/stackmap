@@ -64,8 +64,10 @@ vi.mock('@/hooks/useArchitecture', () => ({
   useArchitecture: () => mockContextValue,
 }));
 
+let mockPathname = '/wizard/functions';
+
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/wizard/functions',
+  usePathname: () => mockPathname,
 }));
 
 function setArchitecture(arch: Architecture) {
@@ -75,6 +77,7 @@ function setArchitecture(arch: Architecture) {
 describe('LiveMapSidebar', () => {
   beforeEach(() => {
     setArchitecture(populated);
+    mockPathname = '/wizard/functions';
   });
 
   it('has no axe violations when closed', async () => {
@@ -151,5 +154,14 @@ describe('LiveMapSidebar', () => {
     const buttons = screen.getAllByRole('button', { name: /open map preview/i });
     await user.click(buttons[0]);
     expect(screen.getByRole('heading', { name: /your map/i })).toBeInTheDocument();
+  });
+
+  it('renders BullseyeDiagram instead of MiniMap on importance step', async () => {
+    mockPathname = '/wizard/importance';
+    const user = userEvent.setup();
+    render(<LiveMapSidebar />);
+    const buttons = screen.getAllByRole('button', { name: /open map preview/i });
+    await user.click(buttons[0]);
+    expect(screen.getByRole('img', { name: /importance/i })).toBeInTheDocument();
   });
 });

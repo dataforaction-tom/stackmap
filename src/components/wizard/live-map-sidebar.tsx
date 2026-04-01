@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { useArchitecture } from '@/hooks/useArchitecture';
 import { MiniMap } from './mini-map';
 import { MapStats } from './map-stats';
 import { ContextualTip } from './contextual-tip';
+import { BullseyeDiagram } from './bullseye-diagram';
 
 // ─── Helpers ───
 
@@ -29,6 +31,8 @@ function buildSummaryText(architecture: {
 
 export function LiveMapSidebar() {
   const { architecture } = useArchitecture();
+  const pathname = usePathname();
+  const isImportanceStep = pathname.includes('/importance');
   const [open, setOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [pulse, setPulse] = useState(false);
@@ -170,18 +174,24 @@ export function LiveMapSidebar() {
 
             {/* Content */}
             <div className="p-6 space-y-6">
-              {/* Mini map — gets proper space now */}
-              <div className="bg-white rounded-xl border border-surface-200 p-4">
-                <MiniMap />
-              </div>
+              {isImportanceStep && architecture ? (
+                <BullseyeDiagram systems={architecture.systems} functions={architecture.functions} />
+              ) : (
+                <>
+                  {/* Mini map — gets proper space now */}
+                  <div className="bg-white rounded-xl border border-surface-200 p-4">
+                    <MiniMap />
+                  </div>
 
-              {/* Stats */}
-              <MapStats />
+                  {/* Stats */}
+                  <MapStats />
 
-              {/* Contextual tip */}
-              <div className="bg-primary-50 rounded-lg px-4 py-3 border border-primary-100">
-                <ContextualTip />
-              </div>
+                  {/* Contextual tip */}
+                  <div className="bg-primary-50 rounded-lg px-4 py-3 border border-primary-100">
+                    <ContextualTip />
+                  </div>
+                </>
+              )}
             </div>
           </aside>
         </div>
