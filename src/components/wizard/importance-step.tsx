@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useArchitecture } from '@/hooks/useArchitecture';
 import { getImportanceTier, IMPORTANCE_TIERS } from '@/lib/importance';
 import type { SystemType, System } from '@/lib/types';
@@ -34,6 +36,11 @@ interface ShadowFormState {
 const emptyShadowForm: ShadowFormState = { name: '', type: 'other', notes: '' };
 
 export function ImportanceStep() {
+  const pathname = usePathname();
+  const basePath = pathname.startsWith('/wizard/services') ? '/wizard/services' : '/wizard/functions';
+  const nextStep = basePath === '/wizard/functions' ? `${basePath}/services` : `${basePath}/functions`;
+  const prevStep = `${basePath}/systems`;
+
   const { architecture, updateSystem, addSystem } = useArchitecture();
   const [expandedForms, setExpandedForms] = useState<Set<string>>(new Set());
   const [shadowForms, setShadowForms] = useState<Record<string, ShadowFormState>>({});
@@ -277,6 +284,28 @@ export function ImportanceStep() {
         </button>
         {renderShadowForm('', 'shadow-general')}
       </section>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between pt-4">
+        <Link
+          href={prevStep}
+          className="btn-secondary inline-flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          Back
+        </Link>
+        <Link
+          href={nextStep}
+          className="btn-primary inline-flex items-center gap-2"
+        >
+          Continue
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -246,7 +246,7 @@ export function ServiceSystems() {
       });
     }
 
-    router.push('/wizard/services/functions');
+    router.push('/wizard/services/importance');
   }, [services, systemsByService, addSystem, removeSystem, architecture, router]);
 
   if (!architecture) {

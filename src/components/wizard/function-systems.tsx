@@ -346,7 +346,7 @@ export function FunctionSystems() {
       }
     }
 
-    router.push('/wizard/functions/services');
+    router.push('/wizard/functions/importance');
   }, [functions, systemsByFunction, addSystem, removeSystem, architecture, router]);
 
   if (!architecture) {
