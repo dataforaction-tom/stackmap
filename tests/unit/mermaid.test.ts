@@ -3,6 +3,7 @@ import {
   generateMermaidDiagram,
   generateSystemDiagram,
   generateFunctionDiagram,
+  generateDataFlowDiagram,
   generateServiceDiagram,
   sanitiseLabel,
 } from '@/lib/diagram/mermaid';
@@ -413,5 +414,74 @@ describe('generateServiceDiagram', () => {
     // sys-2 and sys-3 not linked to any service
     expect(result).toMatch(/sys-2\[.*Excel Spreadsheet.*\]/);
     expect(result).toMatch(/sys-3\[.*Microsoft 365.*\]/);
+  });
+});
+
+// ─── Shadow system exclusion ───
+
+describe('shadow system exclusion', () => {
+  function createArchWithShadow(): Architecture {
+    const arch = createPopulatedArchitecture();
+    arch.systems.push({
+      id: 'sys-shadow',
+      name: 'Personal Trello',
+      type: 'project_management',
+      hosting: 'cloud',
+      status: 'active',
+      functionIds: ['fn-1'],
+      serviceIds: [],
+      isShadow: true,
+    });
+    return arch;
+  }
+
+  it('excludes shadow systems from main diagram', () => {
+    const arch = createArchWithShadow();
+    const result = generateMermaidDiagram(arch);
+    expect(result).not.toContain('Personal Trello');
+    expect(result).not.toContain('sys-shadow');
+    // Non-shadow systems still present
+    expect(result).toContain('Xero');
+  });
+
+  it('excludes shadow systems from system diagram', () => {
+    const arch = createArchWithShadow();
+    const result = generateSystemDiagram(arch);
+    expect(result).not.toContain('Personal Trello');
+    expect(result).not.toContain('sys-shadow');
+    expect(result).toContain('Xero');
+  });
+
+  it('excludes shadow systems from function diagram', () => {
+    const arch = createArchWithShadow();
+    const result = generateFunctionDiagram(arch);
+    expect(result).not.toContain('Personal Trello');
+    expect(result).not.toContain('sys-shadow');
+    expect(result).toContain('Xero');
+  });
+
+  it('excludes shadow systems from data flow diagram', () => {
+    const arch = createArchWithShadow();
+    const result = generateDataFlowDiagram(arch);
+    expect(result).not.toContain('Personal Trello');
+    expect(result).not.toContain('sys-shadow');
+    expect(result).toContain('Xero');
+  });
+
+  it('excludes shadow systems from service diagram', () => {
+    const arch = createArchWithShadow();
+    arch.services = [
+      {
+        id: 'svc-1',
+        name: 'Advice sessions',
+        status: 'active',
+        functionIds: [],
+        systemIds: ['sys-1', 'sys-shadow'],
+      },
+    ];
+    const result = generateServiceDiagram(arch);
+    expect(result).not.toContain('Personal Trello');
+    expect(result).not.toContain('sys-shadow');
+    expect(result).toContain('Xero');
   });
 });

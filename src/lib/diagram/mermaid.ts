@@ -57,10 +57,11 @@ function ownerName(ownerId: string | undefined, owners: Architecture['owners']):
 // ─── Main diagram: functions as subgraphs, systems as nodes, integrations as edges ───
 
 export function generateMermaidDiagram(arch: Architecture): string {
+  const systems = arch.systems.filter((s) => !s.isShadow);
   const lines: string[] = ['graph TB'];
 
   const systemIdToFunctions = new Map<string, string[]>();
-  for (const sys of arch.systems) {
+  for (const sys of systems) {
     systemIdToFunctions.set(sys.id, sys.functionIds);
   }
 
@@ -71,7 +72,7 @@ export function generateMermaidDiagram(arch: Architecture): string {
     const fnLabel = sanitiseLabel(fn.name);
     lines.push(`  subgraph ${fnLabel}`);
 
-    const fnSystems = arch.systems.filter((s) => s.functionIds.includes(fn.id));
+    const fnSystems = systems.filter((s) => s.functionIds.includes(fn.id));
     for (const sys of fnSystems) {
       const sysLabel = systemLabel(sys, arch.owners);
       lines.push(`    ${sys.id}[${sysLabel}]`);
@@ -82,7 +83,7 @@ export function generateMermaidDiagram(arch: Architecture): string {
   }
 
   // Orphan systems (no function assignment)
-  const orphans = arch.systems.filter((s) => !systemsPlaced.has(s.id));
+  const orphans = systems.filter((s) => !systemsPlaced.has(s.id));
   if (orphans.length > 0) {
     for (const sys of orphans) {
       const sysLabel = systemLabel(sys, arch.owners);
@@ -107,7 +108,7 @@ export function generateMermaidDiagram(arch: Architecture): string {
   }
 
   // Owner annotations
-  for (const sys of arch.systems) {
+  for (const sys of systems) {
     const name = ownerName(sys.ownerId, arch.owners);
     if (name) {
       const ownNodeId = `${sys.id}_owner`;
@@ -149,7 +150,7 @@ export function generateMermaidDiagram(arch: Architecture): string {
   lines.push('  classDef retiring stroke-dasharray:5 5,fill:#e5e7eb,opacity:0.5');
   lines.push('  classDef legacy fill:#d1d5db,opacity:0.6');
 
-  for (const sys of arch.systems) {
+  for (const sys of systems) {
     if (sys.status !== 'active') {
       lines.push(`  class ${sys.id} ${sys.status}`);
     }
@@ -161,10 +162,11 @@ export function generateMermaidDiagram(arch: Architecture): string {
 // ─── System diagram: flat nodes + integration edges (no function grouping) ───
 
 export function generateSystemDiagram(arch: Architecture): string {
+  const systems = arch.systems.filter((s) => !s.isShadow);
   const lines: string[] = ['graph TB'];
 
   // All systems as flat nodes
-  for (const sys of arch.systems) {
+  for (const sys of systems) {
     const sysLabel = sanitiseLabel(sys.name);
     lines.push(`  ${sys.id}[${sysLabel}]`);
   }
@@ -184,7 +186,7 @@ export function generateSystemDiagram(arch: Architecture): string {
   lines.push('  classDef retiring stroke-dasharray:5 5,fill:#e5e7eb,opacity:0.5');
   lines.push('  classDef legacy fill:#d1d5db,opacity:0.6');
 
-  for (const sys of arch.systems) {
+  for (const sys of systems) {
     if (sys.status !== 'active') {
       lines.push(`  class ${sys.id} ${sys.status}`);
     }
@@ -196,6 +198,7 @@ export function generateSystemDiagram(arch: Architecture): string {
 // ─── Function diagram: functions as subgraphs with systems, no integration edges ───
 
 export function generateFunctionDiagram(arch: Architecture): string {
+  const systems = arch.systems.filter((s) => !s.isShadow);
   const lines: string[] = ['graph TB'];
 
   const systemsPlaced = new Set<string>();
@@ -204,7 +207,7 @@ export function generateFunctionDiagram(arch: Architecture): string {
     const fnLabel = sanitiseLabel(fn.name);
     lines.push(`  subgraph ${fnLabel}`);
 
-    const fnSystems = arch.systems.filter((s) => s.functionIds.includes(fn.id));
+    const fnSystems = systems.filter((s) => s.functionIds.includes(fn.id));
     for (const sys of fnSystems) {
       const sysLabel = sanitiseLabel(sys.name);
       lines.push(`    ${sys.id}[${sysLabel}]`);
@@ -215,7 +218,7 @@ export function generateFunctionDiagram(arch: Architecture): string {
   }
 
   // Orphan systems
-  const orphans = arch.systems.filter((s) => !systemsPlaced.has(s.id));
+  const orphans = systems.filter((s) => !systemsPlaced.has(s.id));
   for (const sys of orphans) {
     const sysLabel = sanitiseLabel(sys.name);
     lines.push(`  ${sys.id}[${sysLabel}]`);
@@ -226,7 +229,7 @@ export function generateFunctionDiagram(arch: Architecture): string {
   lines.push('  classDef retiring stroke-dasharray:5 5,fill:#e5e7eb,opacity:0.5');
   lines.push('  classDef legacy fill:#d1d5db,opacity:0.6');
 
-  for (const sys of arch.systems) {
+  for (const sys of systems) {
     if (sys.status !== 'active') {
       lines.push(`  class ${sys.id} ${sys.status}`);
     }
@@ -238,10 +241,11 @@ export function generateFunctionDiagram(arch: Architecture): string {
 // ─── Data flow diagram: systems coloured by sensitivity, edges labelled with data categories ───
 
 export function generateDataFlowDiagram(arch: Architecture): string {
+  const systems = arch.systems.filter((s) => !s.isShadow);
   const lines: string[] = ['graph TB'];
 
   // Systems as nodes
-  for (const sys of arch.systems) {
+  for (const sys of systems) {
     lines.push(`  ${sys.id}[${sanitiseLabel(sys.name)}]`);
   }
 
@@ -298,6 +302,7 @@ export function generateDataFlowDiagram(arch: Architecture): string {
 // ─── Service diagram: services as subgraphs with their systems ───
 
 export function generateServiceDiagram(arch: Architecture): string {
+  const systems = arch.systems.filter((s) => !s.isShadow);
   const lines: string[] = ['graph TB'];
 
   const systemsPlaced = new Set<string>();
@@ -306,7 +311,7 @@ export function generateServiceDiagram(arch: Architecture): string {
     const svcLabel = sanitiseLabel(svc.name);
     lines.push(`  subgraph ${svcLabel}`);
 
-    const svcSystems = arch.systems.filter((s) => svc.systemIds.includes(s.id));
+    const svcSystems = systems.filter((s) => svc.systemIds.includes(s.id));
     for (const sys of svcSystems) {
       const sysLabel = systemLabel(sys, arch.owners);
       lines.push(`    ${sys.id}[${sysLabel}]`);
@@ -317,7 +322,7 @@ export function generateServiceDiagram(arch: Architecture): string {
   }
 
   // Systems not linked to any service
-  const orphans = arch.systems.filter((s) => !systemsPlaced.has(s.id));
+  const orphans = systems.filter((s) => !systemsPlaced.has(s.id));
   if (orphans.length > 0) {
     lines.push('  subgraph Other');
     for (const sys of orphans) {
