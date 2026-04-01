@@ -7,6 +7,7 @@ import { useArchitecture } from '@/hooks/useArchitecture';
 import { aggregateRisk, totalScore, riskLevel, RISK_DIMENSIONS } from '@/lib/techfreedom/risk';
 import { calculateCostSummary, findSystemOverlaps, formatCurrency } from '@/lib/cost-analysis';
 import { generateMarkdownExport } from '@/lib/export/markdown';
+import { generateCsvExport } from '@/lib/export/csv';
 import { BullseyeDiagram } from './bullseye-diagram';
 import { getImportanceTier } from '@/lib/importance';
 
@@ -44,7 +45,7 @@ const RISK_COLORS: Record<string, string> = {
 export function ReviewSummary() {
   const pathname = usePathname();
   const basePath = pathname.startsWith('/wizard/services') ? '/wizard/services' : '/wizard/functions';
-  const { architecture, save, getArchitecture } = useArchitecture();
+  const { architecture, getArchitecture } = useArchitecture();
 
   const handleExportJson = useCallback(() => {
     const arch = getArchitecture();
@@ -77,9 +78,18 @@ export function ReviewSummary() {
     URL.revokeObjectURL(url);
   }, [getArchitecture]);
 
-  const handleSave = useCallback(async () => {
-    await save();
-  }, [save]);
+  const handleExportCsv = useCallback(() => {
+    const arch = getArchitecture();
+    if (!arch) return;
+    const csv = generateCsvExport(arch);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stackmap-${arch.organisation.name || 'export'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [getArchitecture]);
 
   if (!architecture) {
     return (
@@ -650,8 +660,7 @@ export function ReviewSummary() {
           What next?
         </h2>
         <p className="text-primary-300 text-sm leading-relaxed max-w-lg">
-          Your technology map is ready. View it as a diagram, export the data,
-          or save your progress to come back later.
+          Your technology map is ready. View it as a diagram or export the data.
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
@@ -686,13 +695,13 @@ export function ReviewSummary() {
           </button>
           <button
             type="button"
-            onClick={handleSave}
+            onClick={handleExportCsv}
             className="bg-primary-700 hover:bg-primary-600 text-primary-100 px-5 py-2.5 rounded-lg font-semibold text-sm inline-flex items-center gap-2 transition-colors focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-900"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M10.875 12c-.621 0-1.125.504-1.125 1.125M12 10.875c-.621 0-1.125.504-1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 1.5c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125" />
             </svg>
-            Save progress
+            Export as CSV
           </button>
         </div>
       </div>

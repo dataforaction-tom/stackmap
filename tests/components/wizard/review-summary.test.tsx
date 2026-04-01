@@ -193,11 +193,9 @@ describe('ReviewSummary', () => {
     expect(link).toHaveAttribute('href', '/view/diagram');
   });
 
-  it('has a Save button that calls save', async () => {
-    const user = userEvent.setup();
+  it('has an Export as CSV button', () => {
     render(<ReviewSummary />);
-    await user.click(screen.getByRole('button', { name: /save/i }));
-    expect(saveMock).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /csv/i })).toBeInTheDocument();
   });
 
   it('has a Back link to owners', () => {
