@@ -5,6 +5,37 @@ All notable changes to Stackmap will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-04-01
+
+### Added
+
+- **Import your existing data** — bring in architecture data from CSV or JSON files, either as a fresh map or merged into your current work. A CSV preview table shows completeness indicators before you commit, and auto-scoring fills in TechFreedom risk scores for known tools.
+- **TechFreedom step in the wizard** — risk assessment is now a dedicated wizard step rather than a separate view, so you can review and adjust scores as part of the mapping flow. Path selection now routes through the TechFreedom step.
+- **TechFreedom programme call-to-action** — the risk assessment and review steps now link to the TechFreedom programme for organisations that want support acting on their results.
+- **Data flow diagrams** — a new diagram mode shows how data moves between systems, colour-coded by sensitivity level.
+- **Data categories in review** — the review summary now includes a section showing what data each system holds, with sensitivity levels.
+- **Beneficiaries field** — services now capture who they serve, making the service description richer.
+- **Shared systems view** — the mini-map highlights systems used across multiple functions, displayed in a separate row with function dots.
+- **Personal data indicators** — systems holding personal data show a shield icon in the mini-map.
+- **Status indicators in diagrams** — systems show their status (active, planned, retiring, legacy) visually in both the mini-map and Mermaid diagrams, with status-based styling.
+- **Services shown in mini-map** — services now appear as amber tags alongside their systems.
+- **Contextual tips** — new guidance appears when you flag personal data or mark a system as retiring.
+- **Persistent import button** — available throughout the wizard, not just on the landing page.
+- **Open Graph image** — link previews now show a branded card image on LinkedIn, Twitter, Slack, and other platforms.
+- **Favicon, sitemap, robots.txt, and llms.txt** — improved discoverability and SEO.
+
+### Changed
+
+- **Service form simplified** — clearer language for non-technical users, with references to beneficiaries rather than abstract "users."
+- **Stepper layout compacted** — now fits 9 steps cleanly on screen.
+- **Landing page refined** — removed quotation section, cleaner layout.
+
+### Fixed
+
+- **Blank Open Graph image** — the preview image when sharing links was showing as a white rectangle; now renders correctly.
+- **Static export build** — removed useSearchParams dependency that was breaking Cloudflare Pages builds.
+- **Type errors in test mocks** — fixed missing systemIds and SystemType properties.
+
 ## [0.2.0] - 2026-03-27
 
 ### Added

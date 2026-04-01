@@ -96,11 +96,17 @@ For each system you add, you can provide:
 
 A system can support multiple functions. If you have already added a system for a previous function, you will be able to link it rather than entering it again.
 
-### Step 3: Services (optional)
+### Step 3: TechFreedom risk assessment
+
+If TechFreedom is enabled, the wizard includes a dedicated risk assessment step. Each system you have added is scored across five dimensions: jurisdiction, continuity, surveillance, lock-in, and cost exposure. Known tools are pre-scored automatically — you can review and override any score.
+
+See [TechFreedom Risk Assessment](#10-techfreedom-risk-assessment) for full details.
+
+### Step 4: Services (optional)
 
 You will be asked: "Do you want to map specific services within these functions?"
 
-This step is optional. If your organisation thinks in terms of services (e.g., "Advice sessions", "Youth programmes"), you can add them here and link them to the functions and systems you have already mapped.
+This step is optional. If your organisation thinks in terms of services (e.g., "Advice sessions", "Youth programmes"), you can add them here and link them to the functions and systems you have already mapped. Each service now includes a **beneficiaries** field where you can describe who the service is for.
 
 If this is not relevant to your organisation, skip this step.
 
@@ -271,12 +277,17 @@ The final step shows a summary of your complete architecture map.
 
 Stackmap generates a Mermaid diagram showing your systems and their relationships. This can be embedded in documents, wikis, or GitHub README files.
 
+You can switch between two diagram modes:
+
+- **Architecture view** — shows systems grouped by function, with status indicators and service tags
+- **Data flow view** — shows how data moves between systems, colour-coded by sensitivity level (public, internal, confidential, restricted)
+
 ### JSON export
 
 Export your complete architecture as a JSON file. This produces a structured document containing all entities, relationships, and metadata. The JSON format can be:
 
 - Shared with colleagues
-- Imported into other tools
+- Imported back into Stackmap (see [Importing Data](#14-importing-data))
 - Stored in version control
 - Used for sector-wide aggregation
 
@@ -393,6 +404,13 @@ As you work through the wizard, a live sidebar shows your architecture map build
 
 The sidebar displays a simplified Mermaid diagram that updates automatically as you add functions, systems, services, and integrations. It provides a visual confirmation that your data is being captured correctly.
 
+### What the map shows
+
+- **Systems** display status indicators (active, planned, retiring, legacy) with colour coding
+- **Personal data** — systems holding personal data show a shield icon
+- **Shared systems** — systems used by more than one function appear in a dedicated row with dots indicating which functions they belong to
+- **Services** appear as amber tags alongside their systems
+
 ### Tips
 
 - The sidebar is visible on larger screens. On mobile devices, you can toggle it.
@@ -426,3 +444,36 @@ Cost data is included in the JSON export.
 
 !!! warning
     Clearing data is permanent. If you want to keep a copy, export your architecture as JSON before clearing.
+
+---
+
+## 14. Importing Data
+
+If you already have information about your technology in a spreadsheet or a previously exported Stackmap file, you can import it instead of entering everything manually.
+
+### How to import
+
+The import button is available on the landing page and throughout the wizard. Click it to open the import dialog, where you can:
+
+1. **Choose your format** — CSV (from a spreadsheet) or JSON (from a previous Stackmap export)
+2. **Upload your file** — drag and drop or browse to select
+3. **Preview and check** — for CSV files, a preview table shows your data with completeness indicators highlighting any missing fields
+
+### Import modes
+
+- **Fresh import** — replaces any existing data with the imported architecture
+- **Merge** — adds imported systems and data into your current architecture, without overwriting what you have already mapped
+
+### Auto-scoring
+
+When you import systems that match known tools in Stackmap's database, TechFreedom risk scores and cost estimates are filled in automatically. You can review and adjust these after import.
+
+### CSV format
+
+Your CSV should include columns for system name, type, vendor, and any other details you have. Stackmap is flexible about column names — it will match common variations like "System", "Tool", "Software" for the system name column.
+
+### Tips
+
+- Export your current architecture as JSON before importing, so you have a backup
+- The merge mode is useful for adding new systems discovered during a review without losing existing work
+- After import, walk through the wizard to fill in any gaps the import could not cover (integrations, data categories, owners)
