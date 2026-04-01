@@ -28,7 +28,7 @@ export default function Home() {
               actually uses?
             </h1>
             <p className="text-body-lg text-primary-700 max-w-xl mb-10 leading-relaxed">
-              Most don&rsquo;t. Stackmap helps charities, social enterprises, and councils
+              Most don&rsquo;t. Stackmap helps charities, social enterprises, and businesses 
               build a clear picture of their tech &mdash; systems, costs, risks, and who&rsquo;s
               responsible &mdash; in about an hour. No consultants needed.
             </p>
