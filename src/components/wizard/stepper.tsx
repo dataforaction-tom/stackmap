@@ -38,7 +38,7 @@ function StepCircle({ isComplete, isCurrent, index }: { isComplete: boolean; isC
   return (
     <span
       className={`
-        flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium
+        flex items-center justify-center w-7 h-7 rounded-full text-xs font-medium
         transition-colors duration-150
         ${isComplete ? 'bg-primary-600 text-white' : ''}
         ${isCurrent ? 'bg-primary-100 text-primary-800 ring-2 ring-primary-500' : ''}
@@ -83,7 +83,7 @@ export function Stepper({ trailing }: StepperProps = {}) {
   const currentIndex = steps.findIndex((s) => s.path === pathname);
 
   return (
-    <nav aria-label="Wizard progress" className="w-full max-w-3xl mx-auto px-4 py-4">
+    <nav aria-label="Wizard progress" className="w-full max-w-4xl mx-auto px-4 py-4">
       {/* Mobile compact view */}
       <div className="sm:hidden flex items-center justify-between px-2">
         {currentIndex > 0 ? (
@@ -153,7 +153,7 @@ export function Stepper({ trailing }: StepperProps = {}) {
                 {index < steps.length - 1 && (
                   <div
                     className={`
-                      w-4 lg:w-8 h-0.5 mx-0.5
+                      w-2 lg:w-4 h-0.5 mx-0.5
                       ${isComplete ? 'bg-primary-500' : 'bg-surface-200'}
                     `}
                     aria-hidden="true"
