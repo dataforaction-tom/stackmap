@@ -109,6 +109,22 @@ describe('Core Types', () => {
       expect(sys.cost?.amount).toBe(100);
     });
 
+    it('accepts importance and isShadow on a System', () => {
+      const system: System = {
+        id: 'sys-1',
+        name: 'WhatsApp',
+        type: 'messaging',
+        hosting: 'cloud',
+        status: 'active',
+        functionIds: [],
+        serviceIds: [],
+        importance: 7,
+        isShadow: true,
+      };
+      expect(system.importance).toBe(7);
+      expect(system.isShadow).toBe(true);
+    });
+
     it('should accept a minimal system', () => {
       const sys: System = {
         id: 'sys-2',

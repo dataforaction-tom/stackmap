@@ -91,6 +91,8 @@ export interface System {
     model: 'subscription' | 'perpetual' | 'free' | 'unknown';
   };
   techFreedomScore?: TechFreedomScore;
+  importance?: number;
+  isShadow?: boolean;
 }
 
 export interface DataCategory {

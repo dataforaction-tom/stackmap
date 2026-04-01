@@ -143,6 +143,8 @@ export const SystemSchema = z.object({
   url: z.url().optional(),
   cost: CostSchema.optional(),
   techFreedomScore: TechFreedomScoreSchema.optional(),
+  importance: z.number().min(1).max(10).optional(),
+  isShadow: z.boolean().optional(),
 });
 
 export const DataCategorySchema = z.object({
