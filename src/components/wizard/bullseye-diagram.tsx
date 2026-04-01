@@ -89,113 +89,120 @@ export function BullseyeDiagram({ systems, functions }: BullseyeDiagramProps) {
   const DOT_R = 6;
 
   return (
-    <svg
-      viewBox={`0 0 ${size} ${size}`}
-      width="100%"
-      height="100%"
-      role="img"
-      aria-label="Importance bullseye diagram"
-      className="max-w-full"
-    >
-      {/* Rings — draw outermost first */}
-      {[2, 1, 0].map(i => {
-        const r = ringWidth * (i + 1);
-        return (
-          <circle
-            key={`ring-${i}`}
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill={RING_FILLS[i]}
-            stroke={RING_STROKES[i]}
-            strokeWidth={1.5}
-          />
-        );
-      })}
-
-      {/* Ring labels — positioned to the right */}
-      {RING_LABELS.map((label, i) => {
-        return (
-          <text
-            key={`label-${i}`}
-            x={cx + ringWidth * (i + 1) - 4}
-            y={cy - 4}
-            textAnchor="end"
-            fontSize={10}
-            fill={RING_STROKES[i]}
-            fontWeight={600}
-          >
-            {label}
-          </text>
-        );
-      })}
-
-      {/* Scored systems */}
-      {scored.map(system => {
-        const angle = scoredAngles.get(system.id) ?? 0;
-        const r = scoreToRadius(system.importance!);
-        const x = cx + r * Math.cos(angle);
-        const y = cy + r * Math.sin(angle);
-        const color = getColor(system);
-        const isDashed = system.isShadow;
-
-        return (
-          <g key={system.id}>
+    <div>
+      <svg
+        viewBox={`0 0 ${size} ${size}`}
+        width="100%"
+        height="100%"
+        role="img"
+        aria-label="Importance bullseye diagram"
+        className="max-w-full"
+      >
+        {/* Rings — draw outermost first */}
+        {[2, 1, 0].map(i => {
+          const r = ringWidth * (i + 1);
+          return (
             <circle
-              cx={x}
-              cy={y}
-              r={DOT_R}
-              fill={color}
-              stroke={color}
-              strokeWidth={isDashed ? 2 : 1}
-              strokeDasharray={isDashed ? '4 2' : undefined}
-              opacity={0.9}
+              key={`ring-${i}`}
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill={RING_FILLS[i]}
+              stroke={RING_STROKES[i]}
+              strokeWidth={1.5}
             />
-            <text
-              x={x + DOT_R + 3}
-              y={y + 3}
-              fontSize={9}
-              fill="#1c3b27"
-            >
-              {system.name}
-            </text>
-            <title>{`${system.name}: ${system.importance}/10 (${getImportanceTier(system.importance)?.label ?? 'Unscored'})`}</title>
-          </g>
-        );
-      })}
+          );
+        })}
 
-      {/* Unscored shadow systems — outside the rings */}
-      {unscoredShadow.map(system => {
-        const angle = shadowAngles.get(system.id) ?? 0;
-        const x = cx + shadowRadius * Math.cos(angle);
-        const y = cy + shadowRadius * Math.sin(angle);
-        const color = getColor(system);
+        {/* Scored systems */}
+        {scored.map(system => {
+          const angle = scoredAngles.get(system.id) ?? 0;
+          const r = scoreToRadius(system.importance!);
+          const x = cx + r * Math.cos(angle);
+          const y = cy + r * Math.sin(angle);
+          const color = getColor(system);
+          const isDashed = system.isShadow;
 
-        return (
-          <g key={system.id}>
-            <circle
-              cx={x}
-              cy={y}
-              r={DOT_R}
-              fill="none"
-              stroke={color}
-              strokeWidth={2}
-              strokeDasharray="4 2"
-              opacity={0.7}
+          return (
+            <g key={system.id}>
+              <circle
+                cx={x}
+                cy={y}
+                r={DOT_R}
+                fill={color}
+                stroke={color}
+                strokeWidth={isDashed ? 2 : 1}
+                strokeDasharray={isDashed ? '4 2' : undefined}
+                opacity={0.9}
+              />
+              <text
+                x={x + DOT_R + 3}
+                y={y + 3}
+                fontSize={9}
+                fill="#1c3b27"
+              >
+                {system.name}
+              </text>
+              <title>{`${system.name}: ${system.importance}/10 (${getImportanceTier(system.importance)?.label ?? 'Unscored'})`}</title>
+            </g>
+          );
+        })}
+
+        {/* Unscored shadow systems — outside the rings */}
+        {unscoredShadow.map(system => {
+          const angle = shadowAngles.get(system.id) ?? 0;
+          const x = cx + shadowRadius * Math.cos(angle);
+          const y = cy + shadowRadius * Math.sin(angle);
+          const color = getColor(system);
+
+          return (
+            <g key={system.id}>
+              <circle
+                cx={x}
+                cy={y}
+                r={DOT_R}
+                fill="none"
+                stroke={color}
+                strokeWidth={2}
+                strokeDasharray="4 2"
+                opacity={0.7}
+              />
+              <text
+                x={x + DOT_R + 3}
+                y={y + 3}
+                fontSize={9}
+                fill="#788866"
+                fontStyle="italic"
+              >
+                {system.name}
+              </text>
+              <title>{`${system.name}: Shadow tool (unscored)`}</title>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Legend */}
+      <div className="flex flex-wrap justify-center gap-3 mt-3 text-xs">
+        {RING_LABELS.map((label, i) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <span
+              className="inline-block w-3 h-3 rounded-full border"
+              style={{ backgroundColor: RING_FILLS[i], borderColor: RING_STROKES[i] }}
             />
-            <text
-              x={x + DOT_R + 3}
-              y={y + 3}
-              fontSize={9}
-              fill="#788866"
-              fontStyle="italic"
-            >
-              {system.name}
-            </text>
-            <title>{`${system.name}: Shadow tool (unscored)`}</title>
-          </g>
-        );
-      })}
-    </svg>
+            <span style={{ color: RING_STROKES[i] }} className="font-medium">{label}</span>
+          </div>
+        ))}
+        {unscoredShadow.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <span
+              className="inline-block w-3 h-3 rounded-full border border-dashed"
+              style={{ borderColor: '#788866' }}
+            />
+            <span className="font-medium text-[#788866]">Shadow</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
