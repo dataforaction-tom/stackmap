@@ -180,6 +180,37 @@ export function generateMarkdownExport(arch: Architecture): string {
     lines.push('');
   }
 
+  // Importance
+  const importanceSystems = systems
+    .filter((s) => s.importance != null && !s.isShadow)
+    .sort((a, b) => (b.importance ?? 0) - (a.importance ?? 0));
+  if (importanceSystems.length > 0) {
+    lines.push('## Importance');
+    lines.push('');
+    lines.push('| System | Score | Tier |');
+    lines.push('|--------|-------|------|');
+    for (const sys of importanceSystems) {
+      const score = sys.importance!;
+      const tier = score >= 8 ? 'Core' : score >= 4 ? 'Important' : 'Peripheral';
+      lines.push(`| ${sys.name} | ${score}/10 | ${tier} |`);
+    }
+    lines.push('');
+  }
+
+  // Shadow & Informal Tools
+  const shadowSystems = systems.filter((s) => s.isShadow === true);
+  if (shadowSystems.length > 0) {
+    lines.push('## Shadow & Informal Tools');
+    lines.push('');
+    lines.push('| Tool | Type | Importance |');
+    lines.push('|------|------|------------|');
+    for (const sys of shadowSystems) {
+      const impStr = sys.importance != null ? `${sys.importance}/10` : 'Unscored';
+      lines.push(`| ${sys.name} | ${formatType(sys.type)} | ${impStr} |`);
+    }
+    lines.push('');
+  }
+
   // Risk Summary (TechFreedom)
   if (techFreedomEnabled) {
     const scoredSystems = systems.filter((s) => s.techFreedomScore !== undefined);

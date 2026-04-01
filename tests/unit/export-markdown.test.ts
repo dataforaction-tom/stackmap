@@ -204,6 +204,79 @@ describe('generateMarkdownExport', () => {
     expect(result).toContain('Free');
   });
 
+  it('includes importance tier table in markdown export', () => {
+    const arch = createPopulatedArchitecture();
+    arch.systems[0].importance = 9; // Xero -> Core
+    arch.systems[1].importance = 5; // Salesforce -> Important
+    const md = generateMarkdownExport(arch);
+    expect(md).toContain('## Importance');
+    expect(md).toContain('| System | Score | Tier |');
+    expect(md).toContain('| Xero | 9/10 | Core |');
+    expect(md).toContain('| Salesforce | 5/10 | Important |');
+  });
+
+  it('sorts importance table by score descending', () => {
+    const arch = createPopulatedArchitecture();
+    arch.systems[0].importance = 5; // Xero
+    arch.systems[1].importance = 9; // Salesforce
+    const md = generateMarkdownExport(arch);
+    const xeroIdx = md.indexOf('| Xero | 5/10');
+    const sfIdx = md.indexOf('| Salesforce | 9/10');
+    expect(sfIdx).toBeLessThan(xeroIdx);
+  });
+
+  it('derives correct importance tiers', () => {
+    const arch = createPopulatedArchitecture();
+    arch.systems[0].importance = 8; // Core
+    arch.systems[1].importance = 4; // Important
+    arch.systems[2].importance = 2; // Peripheral (Slack)
+    const md = generateMarkdownExport(arch);
+    expect(md).toContain('| Xero | 8/10 | Core |');
+    expect(md).toContain('| Salesforce | 4/10 | Important |');
+    expect(md).toContain('| Slack | 2/10 | Peripheral |');
+  });
+
+  it('excludes importance section when no systems have importance', () => {
+    const arch = createPopulatedArchitecture();
+    const md = generateMarkdownExport(arch);
+    expect(md).not.toContain('## Importance');
+  });
+
+  it('excludes shadow systems from importance table', () => {
+    const arch = createPopulatedArchitecture();
+    arch.systems[0].importance = 9;
+    arch.systems[1].importance = 3;
+    arch.systems[1].isShadow = true;
+    const md = generateMarkdownExport(arch);
+    const importanceSection = md.split('## Importance')[1]?.split('##')[0] ?? '';
+    expect(importanceSection).toContain('Xero');
+    expect(importanceSection).not.toContain('Salesforce');
+  });
+
+  it('includes shadow tools table for shadow systems', () => {
+    const arch = createPopulatedArchitecture();
+    arch.systems[2].isShadow = true; // Slack
+    arch.systems[2].importance = 3;
+    const md = generateMarkdownExport(arch);
+    expect(md).toContain('## Shadow & Informal Tools');
+    expect(md).toContain('| Tool | Type | Importance |');
+    expect(md).toContain('| Slack | Messaging | 3/10 |');
+  });
+
+  it('shows Unscored for shadow tools without importance', () => {
+    const arch = createPopulatedArchitecture();
+    arch.systems[2].isShadow = true; // Slack
+    const md = generateMarkdownExport(arch);
+    expect(md).toContain('## Shadow & Informal Tools');
+    expect(md).toContain('| Slack | Messaging | Unscored |');
+  });
+
+  it('excludes shadow tools section when no shadow systems', () => {
+    const arch = createPopulatedArchitecture();
+    const md = generateMarkdownExport(arch);
+    expect(md).not.toContain('## Shadow & Informal Tools');
+  });
+
   it('handles empty architecture gracefully', () => {
     const arch = createBlankArchitecture();
     const result = generateMarkdownExport(arch);
