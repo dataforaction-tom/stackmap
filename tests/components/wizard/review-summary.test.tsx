@@ -266,6 +266,83 @@ describe('ReviewSummary', () => {
     });
   });
 
+  describe('Importance overview', () => {
+    it('renders importance overview when systems have importance scores', () => {
+      const archWithImportance: Architecture = {
+        ...fullArchitecture,
+        systems: [
+          { ...fullArchitecture.systems[0], importance: 9 },
+          { ...fullArchitecture.systems[1], importance: 5 },
+        ],
+      };
+
+      const origArch = mockContextValue.architecture;
+      const origGet = mockContextValue.getArchitecture;
+      mockContextValue.architecture = archWithImportance;
+      mockContextValue.getArchitecture = vi.fn().mockReturnValue(archWithImportance);
+
+      try {
+        render(<ReviewSummary />);
+        expect(screen.getByTestId('importance-overview')).toBeInTheDocument();
+        expect(screen.getByRole('img')).toBeInTheDocument();
+        expect(screen.getByText(/1 core/)).toBeInTheDocument();
+        expect(screen.getByText(/1 important/)).toBeInTheDocument();
+      } finally {
+        mockContextValue.architecture = origArch;
+        mockContextValue.getArchitecture = origGet;
+      }
+    });
+
+    it('renders shadow tools section separately', () => {
+      const archWithShadow: Architecture = {
+        ...fullArchitecture,
+        systems: [
+          ...fullArchitecture.systems,
+          { id: 'sys-shadow', name: 'WhatsApp', type: 'messaging', hosting: 'cloud', status: 'active', functionIds: ['fn-1'], serviceIds: [], isShadow: true, importance: 3 },
+        ],
+      };
+
+      const origArch = mockContextValue.architecture;
+      const origGet = mockContextValue.getArchitecture;
+      mockContextValue.architecture = archWithShadow;
+      mockContextValue.getArchitecture = vi.fn().mockReturnValue(archWithShadow);
+
+      try {
+        render(<ReviewSummary />);
+        expect(screen.getByTestId('shadow-tools')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /shadow/i })).toBeInTheDocument();
+        const shadowSection = screen.getByTestId('shadow-tools');
+        expect(shadowSection).toHaveTextContent('WhatsApp');
+      } finally {
+        mockContextValue.architecture = origArch;
+        mockContextValue.getArchitecture = origGet;
+      }
+    });
+
+    it('shows formalisation callout for high-importance shadow tools', () => {
+      const archWithHighShadow: Architecture = {
+        ...fullArchitecture,
+        systems: [
+          ...fullArchitecture.systems,
+          { id: 'sys-shadow', name: 'WhatsApp', type: 'messaging', hosting: 'cloud', status: 'active', functionIds: ['fn-1'], serviceIds: [], isShadow: true, importance: 9 },
+        ],
+      };
+
+      const origArch = mockContextValue.architecture;
+      const origGet = mockContextValue.getArchitecture;
+      mockContextValue.architecture = archWithHighShadow;
+      mockContextValue.getArchitecture = vi.fn().mockReturnValue(archWithHighShadow);
+
+      try {
+        render(<ReviewSummary />);
+        expect(screen.getByText(/consider formalising/i)).toBeInTheDocument();
+      } finally {
+        mockContextValue.architecture = origArch;
+        mockContextValue.getArchitecture = origGet;
+      }
+    });
+  });
+
   describe('TechFreedom integration', () => {
     it('shows Technology Risk Summary when techFreedomEnabled and systems have scores', () => {
       const archWithScores: Architecture = {

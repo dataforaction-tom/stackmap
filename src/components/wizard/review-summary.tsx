@@ -7,6 +7,8 @@ import { useArchitecture } from '@/hooks/useArchitecture';
 import { aggregateRisk, totalScore, riskLevel, RISK_DIMENSIONS } from '@/lib/techfreedom/risk';
 import { calculateCostSummary, findSystemOverlaps, formatCurrency } from '@/lib/cost-analysis';
 import { generateMarkdownExport } from '@/lib/export/markdown';
+import { BullseyeDiagram } from './bullseye-diagram';
+import { getImportanceTier } from '@/lib/importance';
 
 /** Colour accents per function type for visual distinction in the summary */
 const FUNCTION_COLORS: Record<string, string> = {
@@ -530,6 +532,69 @@ export function ReviewSummary() {
               <span>{costSummary.freeCount} {costSummary.freeCount === 1 ? 'system is' : 'systems are'} free</span>
             )}
           </div>
+        </section>
+      )}
+
+      {/* Importance Overview */}
+      {systems.some(s => s.importance !== undefined) && (() => {
+        const officialSystems = systems.filter(s => !s.isShadow);
+        const coreCount = officialSystems.filter(s => (s.importance ?? 0) >= 8).length;
+        const importantCount = officialSystems.filter(s => (s.importance ?? 0) >= 4 && (s.importance ?? 0) < 8).length;
+        const peripheralCount = officialSystems.filter(s => (s.importance ?? 0) >= 1 && (s.importance ?? 0) < 4).length;
+        const shadowSystems = systems.filter(s => s.isShadow);
+        const highImportanceShadow = shadowSystems.filter(s => (s.importance ?? 0) >= 8);
+
+        return (
+          <section className="bg-surface-100 border border-surface-300 rounded-lg p-4 sm:p-6 space-y-4" data-testid="importance-overview">
+            <h2 className="font-display font-semibold text-primary-900 text-lg">
+              Importance Overview
+            </h2>
+            <div className="w-full max-w-sm mx-auto">
+              <BullseyeDiagram systems={systems} functions={functions} />
+            </div>
+            <div className="flex flex-wrap gap-3 text-sm">
+              {coreCount > 0 && <span className="text-green-700">{coreCount} core</span>}
+              {importantCount > 0 && <span className="text-amber-700">{importantCount} important</span>}
+              {peripheralCount > 0 && <span className="text-stone-600">{peripheralCount} peripheral</span>}
+              {shadowSystems.length > 0 && <span className="text-primary-500">{shadowSystems.length} shadow</span>}
+            </div>
+            {highImportanceShadow.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+                {highImportanceShadow.map(s => s.name).join(', ')}
+                {highImportanceShadow.length === 1 ? ' is' : ' are'} classified as shadow but scored as core — consider formalising {highImportanceShadow.length === 1 ? 'it' : 'them'}.
+              </div>
+            )}
+          </section>
+        );
+      })()}
+
+      {/* Shadow & Informal Tools */}
+      {systems.some(s => s.isShadow) && (
+        <section className="bg-surface-100 border border-surface-300 rounded-lg p-4 sm:p-6 space-y-3" data-testid="shadow-tools">
+          <h2 className="font-display font-semibold text-primary-900 text-lg">
+            Shadow &amp; Informal Tools
+          </h2>
+          <ul className="space-y-2" role="list">
+            {systems.filter(s => s.isShadow).map(s => {
+              const tier = getImportanceTier(s.importance);
+              return (
+                <li key={s.id} className="flex items-center justify-between text-sm border-b border-surface-200 pb-2">
+                  <div>
+                    <span className="font-medium text-primary-800">{s.name}</span>
+                  </div>
+                  {tier && (
+                    <span className={`text-xs rounded px-1.5 py-0.5 font-medium ${
+                      tier.tier === 'core' ? 'text-green-700 bg-green-100' :
+                      tier.tier === 'important' ? 'text-amber-700 bg-amber-100' :
+                      'text-stone-600 bg-stone-100'
+                    }`}>
+                      {s.importance}/10
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </section>
       )}
 
