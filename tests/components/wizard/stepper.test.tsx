@@ -32,21 +32,29 @@ describe('Wizard Stepper', () => {
     expect(results).toHaveNoViolations();
   });
 
-  it('renders 9 steps for function-first path', () => {
+  it('renders 10 steps for function-first path', () => {
     render(<Stepper />);
     const nav = screen.getByRole('navigation', { name: /wizard progress/i });
     const list = nav.querySelector('ol');
     const items = list?.querySelectorAll('li');
-    expect(items).toHaveLength(9);
+    expect(items).toHaveLength(10);
   });
 
-  it('renders 9 steps for service-first path', () => {
+  it('renders 10 steps for service-first path', () => {
     mockPathname = '/wizard/services';
     render(<Stepper />);
     const nav = screen.getByRole('navigation', { name: /wizard progress/i });
     const list = nav.querySelector('ol');
     const items = list?.querySelectorAll('li');
-    expect(items).toHaveLength(9);
+    expect(items).toHaveLength(10);
+  });
+
+  it('includes Importance step as step 5 in function-first path', () => {
+    mockPathname = '/wizard/functions/importance';
+    render(<Stepper />);
+    const step = screen.getByText('Importance');
+    expect(step).toBeInTheDocument();
+    expect(step).toHaveAttribute('aria-current', 'step');
   });
 
   it('includes Risk assessment step as step 2', () => {
