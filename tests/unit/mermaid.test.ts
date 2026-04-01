@@ -425,7 +425,7 @@ describe('shadow system exclusion', () => {
     arch.systems.push({
       id: 'sys-shadow',
       name: 'Personal Trello',
-      type: 'project_management',
+      type: 'other',
       hosting: 'cloud',
       status: 'active',
       functionIds: ['fn-1'],
