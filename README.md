@@ -10,9 +10,9 @@
 
 ## What is Stackmap?
 
-Most charities, social enterprises, and local councils have no common model for describing their technology. Architecture knowledge lives in people's heads or in scattered spreadsheets. Commercial enterprise architecture tools exist, but they are expensive, complex, and designed for specialists — not for the operations manager at a 12-person charity who just needs to understand what software the organisation uses and how it all connects.
+Most charities, social enterprises, and businesses have no common model for describing their technology. Architecture knowledge lives in people's heads or in scattered spreadsheets. Commercial enterprise architecture tools exist, but they are expensive, complex, and designed for specialists — not for the operations manager at a 12-person charity who just needs to understand what software the organisation uses and how it all connects.
 
-Stackmap is an open source tool that solves this problem. It provides a guided wizard that walks anyone with operational knowledge through mapping their organisation's technology — systems, integrations, data, and ownership — in an afternoon, with no enterprise architecture training required. The result is an immediately useful architecture map with Mermaid diagrams, cost analysis, and optional risk assessment.
+Stackmap is an open source tool that solves this problem. It provides a guided wizard that walks anyone with operational knowledge through mapping their organisation's technology — systems, integrations, data, and ownership — in an afternoon, with no enterprise architecture training required. The result is an immediately useful architecture map with Mermaid diagrams, cost analysis, and optional TechFreedom powered risk assessment.
 
 
 
